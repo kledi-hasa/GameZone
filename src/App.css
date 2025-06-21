@@ -46,3 +46,8 @@
   background-color: red;
   border-radius: 25%;
 }
+
+.container-fluid{
+  background-color: black;
+  color: white;
+}
