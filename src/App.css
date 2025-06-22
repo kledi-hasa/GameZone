@@ -1,9 +1,16 @@
 #root {
-  max-width: 1280px;
-  margin: 0 auto;
-  padding: 2rem;
-  text-align: center;
-  background-color: black;
+  width: 100%;
+}
+
+.homepage-container {
+  min-height: calc(100vh - 100px); /* Adjust 100px based on Navbar height */
+  width: 100%;
+  background-color: #121212; /* Dark background */
+  display: grid; /* Changed */
+  grid-template-columns: repeat(3, 1fr); /* 3 columns */
+  gap: 1.5rem; /* Gap between cards */
+  padding: 2rem; /* Padding for the container */
+  box-sizing: border-box; /* Ensures padding is included in the width/height */
 }
 
 .logo {

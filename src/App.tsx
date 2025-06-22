@@ -1,35 +1,56 @@
 import './App.css'
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom'
+import { useState } from 'react'
 import Navbar from './components/Navbar.tsx'
+import AdminDashboard from './components/AdminDashboard.tsx'
 import GameBanner from "./components/GameBanner.tsx";
+import { GameProvider, useGameContext } from './context/GameContext.tsx'
 
 function App() {
+  const [showAdminDashboard, setShowAdminDashboard] = useState(false);
 
+  return (
+    <GameProvider>
+      <Router>
+        <div>
+          <Navbar onAdminClick={() => setShowAdminDashboard(true)} />
+          <div className="homepage-container">
+            <Routes>
+              <Route path="/" element={<HomePage />} />
+              <Route path="*" element={<Navigate to="/" replace />} />
+            </Routes>
+          </div>
+          {showAdminDashboard && (
+            <AdminDashboard onClose={() => setShowAdminDashboard(false)} />
+          )}
+        </div>
+      </Router>
+    </GameProvider>
+  )
+}
+
+// HomePage component with existing GameBanner components
+function HomePage() {
+  const { games } = useGameContext();
 
   return (
     <>
-      <div>
-        <Navbar/>
-       
-      </div>
-      <GameBanner
-        title="Elden Ring"
-        releaseDate="February 25, 2022"
-        rating={5}
-        description="An expansive open-world action RPG where you explore the Lands Between, uncover mysteries, and face epic bosses."
-        backgroundImage="https://media.rawg.io/media/games/456/456dea5e1c7e3cd07060c14e96612001.jpg"
-        price= {39.99}
-        onPlayTrailer={() => alert("Playing trailer...")}
-        onAddToWishlist={() => alert("Added to wishlist!")}
-        onAddToCart={() => alert("Added to Cart!")}
-      />
-      <GameBanner title={'GTA V'} releaseDate={'2013'} rating={9} description={'An expansive open-world action RPG where you explore the Lands Between, uncover mysteries, and face epic bosses.'} backgroundImage={'https://media.rawg.io/media/games/456/456dea5e1c7e3cd07060c14e96612001.jpg'} onPlayTrailer={() => alert("Playing trailer...")}
-        onAddToWishlist={() => alert("Added to wishlist!")} price={39.99} onAddToCart={() => alert("Added to Cart!")}/>
-        <GameBanner title={'GTA V'} releaseDate={'2013'} rating={9} description={'An expansive open-world action RPG where you explore the Lands Between, uncover mysteries, and face epic bosses.'} backgroundImage={'https://media.rawg.io/media/games/456/456dea5e1c7e3cd07060c14e96612001.jpg'} onPlayTrailer={() => alert("Playing trailer...")}
-        onAddToWishlist={() => alert("Added to wishlist!")} price={39.99} onAddToCart={() => alert("Added to Cart!")}/>
-        <GameBanner title={'GTA V'} releaseDate={'2013'} rating={9} description={'An expansive open-world action RPG where you explore the Lands Between, uncover mysteries, and face epic bosses.'} backgroundImage={'https://media.rawg.io/media/games/456/456dea5e1c7e3cd07060c14e96612001.jpg'} onPlayTrailer={() => alert("Playing trailer...")}
-        onAddToWishlist={() => alert("Added to wishlist!")} price={39.99} onAddToCart={() => alert("Added to Cart!")}/>
+      {games.map(game => (
+        <GameBanner
+          key={game.id}
+          title={game.title}
+          releaseDate={game.releaseDate}
+          rating={game.rating}
+          description={game.description}
+          backgroundImage={game.backgroundImage}
+          price={game.price}
+          onPlayTrailer={() => alert("Playing trailer...")}
+          onAddToWishlist={() => alert("Added to wishlist!")}
+          onAddToCart={() => alert("Added to Cart!")}
+        />
+      ))}
     </>
-  )
+  );
 }
 
 export default App
