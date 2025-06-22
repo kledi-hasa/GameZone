@@ -19,12 +19,6 @@ const [loginData, setLoginData] = useState({
   // State for form submission message (optional)
   const [message, setMessage] = useState("");
   const [loginMessage, setLoginMessage] = useState("");
-
-  // Handle input changes for signup
-
-
-  // Handle input changes for login
-  
  
   const handleChange = (e) => {
 
@@ -73,7 +67,7 @@ const [loginData, setLoginData] = useState({
           password: "",
         });
         
-        // You can add logic here to store user session, redirect, etc.
+        
         alert(`Welcome back, ${user.username}!`);
         
       } else {
@@ -93,13 +87,9 @@ const [loginData, setLoginData] = useState({
     if (!formData.username || !formData.email || !formData.password) {
       setMessage("Please fill in all fields.");
 
-    
       return;
     }
    
-      
-
-    // You can add API call here to register user
     console.log("Signup form submitted:", formData);
 
     setMessage("Signup successful!");
