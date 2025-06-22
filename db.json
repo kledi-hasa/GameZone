@@ -100,6 +100,13 @@
       "email": "hasakledi25@gmail.com",
       "password": "sdadasd",
       "role": "user"
+    },
+    {
+      "id": "73ab",
+      "username": "Aurela",
+      "email": "ela11gjoka@gmail.com",
+      "password": "asdsadsad",
+      "role": "user"
     }
   ]
 }

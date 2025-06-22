@@ -418,7 +418,10 @@ function HomePage({
         </div>
       </div>
       
-      <GameCarousel games={games} onPlayTrailer={handlePlayTrailer} />
+      {/* Only show GameCarousel on main page when not searching, showing favorites, or showing cart */}
+      {!searchQuery && !showFavorites && !showCart && games.length > 0 && (
+        <GameCarousel games={games} onPlayTrailer={handlePlayTrailer} />
+      )}
 
       <div className="game-grid">
       {showFavorites ? (
