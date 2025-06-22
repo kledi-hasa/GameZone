@@ -1,4 +1,3 @@
-import React from 'react'
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import '../App.css'
@@ -8,17 +7,35 @@ interface NavbarProps {
 }
 
 export default function Navbar({ onAdminClick }: NavbarProps) {
+export default function Navbar() {
+// Signup form data
 const [formData, setFormData] = useState({
     username: "",
+    email: "",
+    password: "",
+    role: "",
+  });
+
+// Login form data
+const [loginData, setLoginData] = useState({
     email: "",
     password: "",
   });
 
   // State for form submission message (optional)
   const [message, setMessage] = useState("");
+  const [loginMessage, setLoginMessage] = useState("");
+
+  // Handle input changes for signup
+
 
   // Handle input changes
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  // Handle input changes for login
+  
+ 
+  const handleChange = (e) => {
+
     const { name, value } = e.target;
     setFormData((prev) => ({
       ...prev,
@@ -28,13 +45,69 @@ const [formData, setFormData] = useState({
 
   // Handle form submission
   const handleSubmit = (e: React.FormEvent) => {
+  const handleLoginChange = (e) => {
+    const { name, value } = e.target;
+    setLoginData((prev) => ({
+      ...prev,
+      [name]: value,
+    }));
+  };
+
+  // Handle login form submission
+  const handleLogin = async (e) => {
+    e.preventDefault();
+
+    // Simple validation example
+    if (!loginData.email || !loginData.password) {
+      setLoginMessage("Please fill in all fields.");
+      return;
+    }
+
+    try {
+      // Fetch users from db.json
+      const response = await fetch('/db.json');
+      const data = await response.json();
+      
+      // Find user with matching email and password
+      const user = data.users.find(
+        u => u.email === loginData.email && u.password === loginData.password
+      );
+
+      if (user) {
+        setLoginMessage("Login successful!");
+        console.log("User logged in:", user);
+        
+        // Optionally reset form
+        setLoginData({
+          email: "",
+          password: "",
+        });
+        
+        // You can add logic here to store user session, redirect, etc.
+        alert(`Welcome back, ${user.username}!`);
+        
+      } else {
+        setLoginMessage("Invalid email or password.");
+      }
+    } catch (error) {
+      console.error('Error during login:', error);
+      setLoginMessage("Login failed. Please try again.");
+    }
+  };
+
+  // Handle signup form submission
+  const handleSubmit = async (e) => {
     e.preventDefault();
 
     // Simple validation example
     if (!formData.username || !formData.email || !formData.password) {
       setMessage("Please fill in all fields.");
+
+    
       return;
     }
+   
+      
 
     // You can add API call here to register user
     console.log("Signup form submitted:", formData);
@@ -46,7 +119,26 @@ const [formData, setFormData] = useState({
       username: "",
       email: "",
       password: "",
+      role: formData.username=="admin" ? "admin" : "user"
     });
+
+try {
+
+      const response = await fetch('http://localhost:5000/users', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        
+        body: JSON.stringify(formData)
+      });
+
+      if (response.ok) {
+        alert('User registered successfully!');
+      } else {
+        alert('Error registering user.');
+      }
+    } catch (err) {
+      console.error('Error:', err);
+    }
   };
 
   return (
@@ -201,6 +293,8 @@ const [formData, setFormData] = useState({
       </div>
       <div className="modal-body" style={{padding: '30px'}}>
   <form className="">
+      <div className="modal-body">
+  <form className="" onSubmit={handleLogin}>
   <div className="input-group row ">
     <label  className="col-sm-2 col-form-label" style={{fontWeight: '600', color: '#495057'}}>Email</label>
     <div className="col-sm-6">
@@ -218,6 +312,15 @@ const [formData, setFormData] = useState({
         target.style.borderColor = '#e9ecef';
         target.style.boxShadow = 'none';
       }}/>
+      <input 
+        type="email" 
+        className="form-control" 
+        id="loginEmail"
+        name="email"
+        placeholder="Email"
+        value={loginData.email}
+        onChange={handleLoginChange}
+      />
     </div>
   </div>
 <br></br>
@@ -238,9 +341,19 @@ const [formData, setFormData] = useState({
         target.style.borderColor = '#e9ecef';
         target.style.boxShadow = 'none';
       }}/>
+      <input 
+        type="password" 
+        className="form-control" 
+        id="loginPassword"
+        name="password"
+        placeholder="Password"
+        value={loginData.password}
+        onChange={handleLoginChange}
+      />
     </div>
   </div>
 </form>
+{loginMessage && <p style={{ marginTop: "1rem", color: loginMessage.includes("successful") ? "green" : "red" }}>{loginMessage}</p>}
       </div>
       <div className="modal-footer" style={{padding: '20px 30px', borderTop: '1px solid rgba(0, 0, 0, 0.05)'}}>
         <button type="button" className="btn btn-secondary" data-bs-dismiss="modal" style={{
@@ -256,6 +369,9 @@ const [formData, setFormData] = useState({
           fontWeight: '600',
           boxShadow: '0 4px 15px rgba(102, 126, 234, 0.3)'
         }}>Login</button>
+      <div className="modal-footer">
+        <button type="button" className="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+        <button type="button" className="btn btn-primary" onClick={handleLogin} >Login</button>
       </div>
     </div>
   </div>
@@ -282,6 +398,10 @@ const [formData, setFormData] = useState({
           fontSize: '1.5rem',
           fontWeight: '700'
         }}><span>&times;</span></button>
+    <div className="modal-content">
+      <div className="modal-header">
+        <h5 className="modal-title" id="exampleModalLabel">Sign Up</h5>
+        <button type="button" className="close navCloseMenu" data-bs-dismiss="modal"><span>&times;</span></button>
       </div>
       <div className="modal-body" style={{padding: '30px'}}>
   <form className="" onSubmit={handleSubmit}>
@@ -311,6 +431,44 @@ const [formData, setFormData] = useState({
     </div>
   </div>
 <br></br>
+ <div className="input-group row ">
+    <div className="col-sm-6">
+      <input type="hidden" className="form-control" id="roli" 
+          name="role"
+        
+          placeholder="Role"
+          value={formData.role}
+          onChange={handleChange}
+          style={{ 
+            marginRight: "0.5rem",
+            borderRadius: '12px',
+            border: '2px solid #e9ecef',
+            padding: '12px 15px',
+            transition: 'all 0.3s ease'
+          }} onFocus={(e: React.FocusEvent<HTMLInputElement>) => {
+            const target = e.target as HTMLInputElement;
+            target.style.borderColor = '#667eea';
+            target.style.boxShadow = '0 0 0 0.2rem rgba(102, 126, 234, 0.25)';
+          }} onBlur={(e: React.FocusEvent<HTMLInputElement>) => {
+            const target = e.target as HTMLInputElement;
+            target.style.borderColor = '#e9ecef';
+            target.style.boxShadow = 'none';
+          }}/>
+    </div>
+  </div>
+<br></br>
+ <div className="input-group row ">
+    <div className="col-sm-6">
+      <input type="hidden" className="form-control" id="roli" 
+          name="role"
+        
+          placeholder="Role"
+          value={formData.role}
+          onChange={handleChange}
+          style={{ marginRight: "0.5rem" }}/>
+    </div>
+  </div>
+  <br></br>
   <div className="input-group row">
     <label  className="col-sm-2 col-form-label" style={{fontWeight: '600', color: '#495057'}}>Password</label>
     <div className="col-sm-6">
@@ -379,6 +537,9 @@ const [formData, setFormData] = useState({
           fontWeight: '600',
           boxShadow: '0 4px 15px rgba(102, 126, 234, 0.3)'
         }}>Sign Up</button>
+      <div className="modal-footer">
+        <button type="button" className="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+        <button type="button" className="btn btn-primary" onClick={handleSubmit}  >Sign Up</button>
       </div>
     </div>
   </div>

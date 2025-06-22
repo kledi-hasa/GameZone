@@ -54,7 +54,6 @@
   border-radius: 25%;
 }
 
-.container-fluid{
+.navbar {
   background-color: black;
-  color: white;
 }
