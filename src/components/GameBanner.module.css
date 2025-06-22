@@ -1,84 +1,173 @@
+.bannerContainer {
+  position: relative;
+  width: 100%;
+  height: 400px;
+}
+
 .banner {
   position: relative;
-  height: 100%;
-  width: 400px;
+  height: 400px;
+  width: 100%;
   color: white;
-  display: inline-flex;
+  display: flex;
   align-items: flex-end;
-  padding: 5rem;
+  padding: 1.5rem;
   background-size: cover;
   background-position: center;
-  border-radius: 8px;
+  border-radius: 12px;
   overflow: hidden;
-  margin: 5px;
+  margin: 0;
+  min-height: 400px;
+  box-sizing: border-box;
+  transition: all 0.3s ease;
+  cursor: pointer;
+}
+
+.banner:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 15px 35px rgba(0, 0, 0, 0.4);
+  border: 2px solid rgba(0, 255, 136, 0.3);
+}
+
+.banner:active {
+  transform: translateY(-2px);
 }
 
 .overlay {
   position: absolute;
   inset: 0;
-  background: linear-gradient(to top, rgba(0, 0, 0, 0.8) 30%, rgba(0, 0, 0, 0) 100%);
+  background: linear-gradient(to top, rgba(0, 0, 0, 0.9) 0%, rgba(0, 0, 0, 0.7) 50%, rgba(0, 0, 0, 0.3) 100%);
   z-index: 0;
 }
 
 .content {
   position: relative;
   z-index: 1;
-  max-width: 60%;
+  width: 100%;
+  max-width: 100%;
+  padding: 0;
 }
 
 .title {
-  font-size: 2.5rem;
+  font-size: 1.5rem;
   margin-bottom: 0.5rem;
+  font-weight: bold;
+  line-height: 1.2;
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8);
 }
 
 .releaseDate {
   font-style: italic;
   margin-bottom: 0.5rem;
+  font-size: 0.9rem;
+  color: #b8b9ba;
+  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.8);
 }
 
 .rating {
-  font-size: 1.5rem;
-  margin-bottom: 1rem;
+  font-size: 1.2rem;
+  margin-bottom: 0.8rem;
+  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.8);
 }
 
 .description {
-  margin-bottom: 1.5rem;
+  margin-bottom: 1rem;
   line-height: 1.4;
+  font-size: 0.9rem;
+  color: #e0e0e0;
+  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.8);
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .buttons {
   display: flex;
-  gap: 1rem;
+  gap: 0.4rem;
+  flex-wrap: nowrap;
+  justify-content: center;
+  align-items: center;
 }
 
 .playButton {
-  padding: 0.5rem 1rem;
-  background-color: #ff3c00;
+  padding: 0.4rem 0.8rem;
+  background-color: #00a651;
   border: none;
-  border-radius: 4px;
+  border-radius: 6px;
   color: white;
   cursor: pointer;
-  font-weight: bold;
+  font-weight: 500;
   transition: background-color 0.3s ease;
+  font-size: 0.8rem;
+  white-space: nowrap;
 }
 
 .playButton:hover {
-  background-color: #e23300;
+  background-color: #008f45;
 }
 
 .wishlistButton {
-  padding: 0.5rem 1rem;
-  background-color: rgba(255, 255, 255, 0.2);
-  border: none;
-  border-radius: 4px;
+  padding: 0.4rem 0.8rem;
+  background-color: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 6px;
   color: white;
   cursor: pointer;
-  font-weight: bold;
+  font-weight: 500;
   transition: background-color 0.3s ease;
+  font-size: 0.8rem;
+  white-space: nowrap;
 }
 
 .wishlistButton:hover {
-  background-color: rgba(255, 255, 255, 0.35);
+  background-color: rgba(255, 255, 255, 0.2);
+}
+
+.heartButton {
+  width: 40px;
+  height: 40px;
+  background: transparent;
+  border: none;
+  color: white;
+  font-size: 1.5rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s ease;
+  flex-shrink: 0;
+  padding: 0;
+}
+
+.heartButton:hover {
+  transform: scale(1.1);
+  color: #ff6b6b;
+}
+
+.heartButton:active {
+  transform: scale(0.95);
+}
+
+.heartButton.filled {
+  color: #e74c3c;
+  animation: heartBeat 0.3s ease;
+}
+
+@keyframes heartBeat {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.2); }
+  100% { transform: scale(1); }
+}
+
+.inCart {
+  background-color: #28a745 !important;
+  color: white !important;
+}
+
+.inCart:hover {
+  background-color: #218838 !important;
 }
 
 .star {
@@ -87,4 +176,450 @@
 
 .starInactive {
   color: #555;
+}
+
+/* Detailed Click Card Styles */
+.detailedCardOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.8);
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  z-index: 1000;
+  backdrop-filter: blur(10px);
+  animation: fadeIn 0.3s ease-out;
+  padding: 80px 20px 20px;
+  /* overflow-y: auto; */
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.detailedCard {
+  position: relative;
+  width: 90%;
+  max-width: 600px;
+  max-height: 80vh;
+  background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+  border-radius: 20px;
+  box-shadow: 0 25px 80px rgba(0, 0, 0, 0.9);
+  border: 2px solid rgba(0, 255, 136, 0.3);
+  overflow-y: auto;
+  animation: slideInModal 0.3s ease-out;
+  backdrop-filter: blur(20px);
+}
+
+@keyframes slideInModal {
+  from {
+    opacity: 0;
+    transform: scale(0.9) translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+.detailedCardContent {
+  padding: 2rem;
+  color: white;
+}
+
+.detailedHeader {
+  display: flex;
+  gap: 1.5rem;
+  margin-bottom: 2rem;
+  position: relative;
+}
+
+.detailedImage {
+  width: 150px;
+  height: 100px;
+  border-radius: 12px;
+  overflow: hidden;
+  flex-shrink: 0;
+  border: 2px solid rgba(0, 255, 136, 0.2);
+}
+
+.detailedImage img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.detailedInfo {
+  flex: 1;
+}
+
+.detailedTitle {
+  font-size: 1.8rem;
+  font-weight: 700;
+  margin-bottom: 0.8rem;
+  color: #00ff88;
+  line-height: 1.2;
+  text-shadow: 0 0 20px rgba(0, 255, 136, 0.3);
+}
+
+.detailedMeta {
+  display: flex;
+  flex-direction: column;
+  gap: 0.8rem;
+  margin-bottom: 1.5rem;
+}
+
+.detailedReleaseDate {
+  font-size: 1rem;
+  color: #b0b0b0;
+  background: rgba(255, 255, 255, 0.1);
+  padding: 0.5rem 1rem;
+  border-radius: 20px;
+  backdrop-filter: blur(10px);
+  display: inline-block;
+  width: fit-content;
+}
+
+.detailedRating {
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+}
+
+.detailedStars {
+  display: flex;
+  gap: 3px;
+}
+
+.detailedRatingText {
+  color: #b0b0b0;
+  font-size: 1rem;
+  font-weight: 500;
+}
+
+.detailedPrice {
+  margin-bottom: 1.5rem;
+}
+
+.detailedPriceTag {
+  font-size: 2.2rem;
+  font-weight: 700;
+  color: #00ff88;
+  text-shadow: 0 0 20px rgba(0, 255, 136, 0.5);
+  background: rgba(0, 255, 136, 0.1);
+  padding: 0.8rem 1.5rem;
+  border-radius: 15px;
+  border: 2px solid rgba(0, 255, 136, 0.3);
+  display: inline-block;
+}
+
+.closeButton {
+  position: absolute;
+  top: -10px;
+  right: -10px;
+  width: 40px;
+  height: 40px;
+  background: linear-gradient(45deg, #ff4757, #ff3742);
+  border: none;
+  color: white;
+  font-size: 1.5rem;
+  font-weight: bold;
+  cursor: pointer;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 15px rgba(255, 71, 87, 0.3);
+  z-index: 10;
+}
+
+.closeButton:hover {
+  transform: scale(1.1);
+  box-shadow: 0 8px 25px rgba(255, 71, 87, 0.5);
+}
+
+.detailedDescription {
+  margin-bottom: 2rem;
+}
+
+.detailedDescription h3 {
+  font-size: 1.3rem;
+  font-weight: 600;
+  margin-bottom: 1rem;
+  color: #00ff88;
+  text-shadow: 0 0 10px rgba(0, 255, 136, 0.3);
+}
+
+.detailedDescription p {
+  font-size: 1rem;
+  line-height: 1.7;
+  color: #e0e0e0;
+  background: rgba(255, 255, 255, 0.05);
+  padding: 1.5rem;
+  border-radius: 12px;
+  border-left: 4px solid #00ff88;
+  backdrop-filter: blur(10px);
+}
+
+.detailedTags {
+  margin-bottom: 2rem;
+}
+
+.detailedTags h3 {
+  font-size: 1.3rem;
+  font-weight: 600;
+  margin-bottom: 1rem;
+  color: #00ff88;
+  text-shadow: 0 0 10px rgba(0, 255, 136, 0.3);
+}
+
+.tagsList {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.8rem;
+}
+
+.tag {
+  background: rgba(0, 255, 136, 0.1);
+  border: 2px solid rgba(0, 255, 136, 0.3);
+  color: #00ff88;
+  padding: 0.5rem 1rem;
+  border-radius: 20px;
+  font-size: 0.9rem;
+  font-weight: 500;
+  transition: all 0.3s ease;
+  backdrop-filter: blur(10px);
+}
+
+.tag:hover {
+  background: rgba(0, 255, 136, 0.2);
+  transform: translateY(-2px);
+  box-shadow: 0 5px 15px rgba(0, 255, 136, 0.3);
+}
+
+.detailedRequirements {
+  margin-bottom: 2rem;
+}
+
+.detailedRequirements h3 {
+  font-size: 1.3rem;
+  font-weight: 600;
+  margin-bottom: 1rem;
+  color: #00ff88;
+  text-shadow: 0 0 10px rgba(0, 255, 136, 0.3);
+}
+
+.requirementsList {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.8rem;
+  background: rgba(255, 255, 255, 0.05);
+  padding: 1.5rem;
+  border-radius: 12px;
+  backdrop-filter: blur(10px);
+}
+
+.requirementItem {
+  font-size: 0.9rem;
+  color: #e0e0e0;
+  line-height: 1.5;
+  padding: 0.5rem;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.requirementItem strong {
+  color: #00ff88;
+  font-weight: 600;
+}
+
+.detailedActions {
+  display: flex;
+  gap: 1rem;
+  justify-content: center;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.detailedTrailerButton {
+  background: linear-gradient(45deg, #ff4757, #ff3742);
+  border: none;
+  color: white;
+  padding: 1rem 2rem;
+  border-radius: 12px;
+  cursor: pointer;
+  font-size: 1rem;
+  font-weight: 600;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 15px rgba(255, 71, 87, 0.3);
+  min-width: 140px;
+}
+
+.detailedTrailerButton:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 8px 25px rgba(255, 71, 87, 0.5);
+}
+
+.detailedBuyButton {
+  background: linear-gradient(45deg, #00ff88, #00d4aa);
+  border: none;
+  color: #1a1a2e;
+  padding: 1rem 2rem;
+  border-radius: 12px;
+  cursor: pointer;
+  font-size: 1rem;
+  font-weight: 600;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 15px rgba(0, 255, 136, 0.3);
+  min-width: 140px;
+}
+
+.detailedBuyButton:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 8px 25px rgba(0, 255, 136, 0.5);
+}
+
+.detailedBuyButton.inCart {
+  background: linear-gradient(45deg, #ffa502, #ff6348);
+  color: white;
+}
+
+.detailedReviewButton {
+  background: linear-gradient(45deg, #6366f1, #8b5cf6);
+  border: none;
+  color: white;
+  padding: 1rem 2rem;
+  border-radius: 12px;
+  cursor: pointer;
+  font-size: 1rem;
+  font-weight: 600;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 15px rgba(99, 102, 241, 0.3);
+  min-width: 140px;
+}
+
+.detailedReviewButton:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 8px 25px rgba(99, 102, 241, 0.5);
+}
+
+.detailedHeartButton {
+  width: 50px;
+  height: 50px;
+  background: rgba(255, 255, 255, 0.1);
+  border: 2px solid rgba(255, 255, 255, 0.2);
+  color: white;
+  font-size: 1.8rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  transition: all 0.3s ease;
+  backdrop-filter: blur(10px);
+}
+
+.detailedHeartButton:hover {
+  background: rgba(255, 255, 255, 0.2);
+  transform: scale(1.1);
+}
+
+.detailedHeartButton.filled {
+  background: linear-gradient(45deg, #ff4757, #ff3742);
+  border-color: #ff4757;
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.05); }
+  100% { transform: scale(1); }
+}
+
+/* Responsive Design for Detailed Card */
+@media (max-width: 768px) {
+  .detailedCard {
+    width: 95%;
+    max-height: 95vh;
+  }
+  
+  .detailedCardContent {
+    padding: 1.5rem;
+  }
+  
+  .detailedHeader {
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    gap: 1rem;
+  }
+  
+  .detailedImage {
+    width: 100%;
+    height: 150px;
+  }
+  
+  .detailedTitle {
+    font-size: 1.5rem;
+  }
+  
+  .detailedPriceTag {
+    font-size: 1.8rem;
+  }
+  
+  .requirementsList {
+    grid-template-columns: 1fr;
+  }
+  
+  .detailedActions {
+    flex-direction: column;
+    gap: 0.8rem;
+  }
+  
+  .detailedTrailerButton,
+  .detailedBuyButton {
+    width: 100%;
+    min-width: auto;
+  }
+}
+
+@media (max-width: 480px) {
+  .detailedCard {
+    width: 98%;
+    margin: 1rem;
+  }
+  
+  .detailedCardContent {
+    padding: 1rem;
+  }
+  
+  .detailedTitle {
+    font-size: 1.3rem;
+  }
+  
+  .detailedPriceTag {
+    font-size: 1.5rem;
+  }
+  
+  .detailedDescription p {
+    font-size: 0.9rem;
+    padding: 1rem;
+  }
+  
+  .closeButton {
+    top: -5px;
+    right: -5px;
+    width: 35px;
+    height: 35px;
+    font-size: 1.2rem;
+  }
 }

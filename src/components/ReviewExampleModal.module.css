@@ -1,0 +1,164 @@
+/* Overlay */
+.review-example-modal-overlay {
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(0,0,0,0.8);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10000;
+  animation: fadeIn 0.2s;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+/* Modal */
+.review-example-modal {
+  background: linear-gradient(135deg, #1e2328, #232a33);
+  border-radius: 16px;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.5);
+  max-width: 420px;
+  width: 95vw;
+  padding: 0;
+  overflow: hidden;
+  color: white;
+  font-family: inherit;
+  animation: slideIn 0.3s cubic-bezier(0.175,0.885,0.32,1.275);
+}
+
+@keyframes slideIn {
+  from { transform: translateY(-40px) scale(0.97); opacity: 0; }
+  to { transform: translateY(0) scale(1); opacity: 1; }
+}
+
+.review-example-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 20px 24px 12px 24px;
+  border-bottom: 1px solid #222;
+  background: linear-gradient(90deg, rgba(0,166,81,0.08), transparent);
+}
+
+.review-example-header h2 {
+  font-size: 1.1rem;
+  font-weight: 600;
+  margin: 0;
+  color: #fff;
+}
+
+.close-button {
+  background: transparent;
+  border: none;
+  color: #aaa;
+  font-size: 24px;
+  cursor: pointer;
+  border-radius: 4px;
+  padding: 2px 8px;
+  transition: background 0.2s, color 0.2s;
+}
+.close-button:hover {
+  background: rgba(255,255,255,0.08);
+  color: #fff;
+}
+
+.review-example-content {
+  padding: 24px;
+}
+
+.review-user-info {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 10px;
+}
+.profile-pic {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid #00a651;
+}
+.username {
+  font-weight: 600;
+  color: #fff;
+}
+.anonymous {
+  color: #aaa;
+  font-size: 0.9em;
+  margin-left: 4px;
+}
+
+.review-stars {
+  margin: 8px 0 6px 0;
+  font-size: 1.2rem;
+}
+.star {
+  color: #ffd700;
+  margin-right: 2px;
+  text-shadow: 0 0 8px #ffd70044;
+}
+
+.review-title {
+  font-size: 1.1rem;
+  font-weight: 600;
+  margin-bottom: 4px;
+  color: #fff;
+}
+.review-text {
+  color: #e0e0e0;
+  font-size: 0.98rem;
+  margin-bottom: 10px;
+}
+.review-meta {
+  color: #00a651;
+  font-size: 0.92rem;
+  margin-bottom: 10px;
+}
+.game-time {
+  font-style: italic;
+}
+
+.review-helpful {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 14px;
+}
+.thumb-btn {
+  background: #232a33;
+  border: 1px solid #333;
+  color: #fff;
+  border-radius: 50%;
+  width: 32px;
+  height: 32px;
+  font-size: 1.1rem;
+  cursor: pointer;
+  transition: background 0.2s, border 0.2s;
+}
+.thumb-btn:hover {
+  background: #00a651;
+  border-color: #00a651;
+  color: #fff;
+}
+
+.review-dev-response {
+  background: rgba(0,166,81,0.08);
+  border-left: 3px solid #00a651;
+  padding: 12px 16px;
+  border-radius: 8px;
+  margin-top: 10px;
+}
+.dev-label {
+  color: #00a651;
+  font-weight: 600;
+  margin-bottom: 2px;
+  font-size: 0.97em;
+}
+.dev-text {
+  color: #e0e0e0;
+  font-size: 0.97em;
+} 
