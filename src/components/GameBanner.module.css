@@ -1,16 +1,15 @@
 .banner {
   position: relative;
-  height: 100%;
-  width: 400px;
+  height: 500px;
+  width: 100%;
   color: white;
-  display: inline-flex;
+  display: flex;
   align-items: flex-end;
-  padding: 5rem;
+  padding: 2rem;
   background-size: cover;
   background-position: center;
   border-radius: 8px;
   overflow: hidden;
-  margin: 5px;
 }
 
 .overlay {
