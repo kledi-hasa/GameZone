@@ -1,345 +1,625 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
-import './AdminPage.module.css';
+import styles from './AdminPage.module.css';
 
 interface User {
   id: string;
-  name: string;
+  username: string;
   email: string;
-  joinDate: string;
-  totalPurchases: number;
-  totalSpent: number;
+  password: string;
+  role?: string;
 }
-
 interface Game {
   id: string;
   title: string;
+  releaseDate: string;
+  rating: number;
+  description: string;
+  backgroundImage: string;
   price: number;
-  sales: number;
-  revenue: number;
-  reviews: number;
-  averageRating: number;
+  trailerUrl?: string;
 }
-
+interface Review {
+  id: string;
+  gameId: string;
+  username: string;
+  content: string;
+  date: string;
+  rating: number;
+  helpful: number;
+  verified: boolean;
+}
 interface Purchase {
   id: string;
   userId: string;
-  userName: string;
   gameId: string;
-  gameTitle: string;
   price: number;
   purchaseDate: string;
   paymentMethod: string;
   transactionKey: string;
 }
 
-interface Review {
-  id: string;
-  userId: string;
-  userName: string;
-  gameId: string;
-  gameTitle: string;
-  rating: number;
-  comment: string;
-  reviewDate: string;
-  helpful: number;
-  verified: boolean;
+type Tab = 'overview' | 'users' | 'games' | 'purchases' | 'reviews';
+const API = 'http://localhost:3000';
+
+// Modal Component
+function Modal({ title, onClose, children }: { title: string, onClose: () => void, children: React.ReactNode }) {
+  return (
+    <div style={{ position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh', background: 'rgba(0,0,0,0.7)', zIndex: 10000, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+      <div style={{ background: 'white', borderRadius: 12, padding: 32, minWidth: 320, maxWidth: 480, width: '100%', position: 'relative' }}>
+        <button onClick={onClose} style={{ position: 'absolute', top: 12, right: 12, fontSize: 24, background: 'none', border: 'none', cursor: 'pointer' }}>×</button>
+        <h2 style={{ marginTop: 0 }}>{title}</h2>
+        {children}
+      </div>
+    </div>
+  );
 }
+
+// Memoized form components
+const UserForm = React.memo(({ form, onChange, onSubmit, type }: { 
+  form: Omit<User, 'id'>, 
+  onChange: (field: keyof Omit<User, 'id'>, value: string) => void,
+  onSubmit: (e: React.FormEvent) => void,
+  type: string 
+}) => (
+  <Modal title={type === 'addUser' ? 'Add User' : 'Edit User'} onClose={() => {}}>
+    <form onSubmit={onSubmit}>
+      <input value={form.username} onChange={e => onChange('username', e.target.value)} placeholder="Username" required />
+      <input value={form.email} onChange={e => onChange('email', e.target.value)} placeholder="Email" required />
+      <input value={form.password} onChange={e => onChange('password', e.target.value)} placeholder="Password" required />
+      <input value={form.role || ''} onChange={e => onChange('role', e.target.value)} placeholder="Role (optional)" />
+      <button type="submit">Save</button>
+    </form>
+  </Modal>
+));
+
+const GameForm = React.memo(({ form, onChange, onSubmit, type }: { 
+  form: Omit<Game, 'id'>, 
+  onChange: (field: keyof Omit<Game, 'id'>, value: string | number) => void,
+  onSubmit: (e: React.FormEvent) => void,
+  type: string 
+}) => (
+  <Modal title={type === 'addGame' ? 'Add Game' : 'Edit Game'} onClose={() => {}}>
+    <form onSubmit={onSubmit}>
+      <input value={form.title} onChange={e => onChange('title', e.target.value)} placeholder="Game Name" required />
+      <textarea value={form.description} onChange={e => onChange('description', e.target.value)} placeholder="Description" required />
+      <input value={form.backgroundImage} onChange={e => onChange('backgroundImage', e.target.value)} placeholder="Picture URL" required />
+      <input type="number" value={form.price} onChange={e => onChange('price', Number(e.target.value))} placeholder="Price" required min={0} step={0.01} />
+      <input value={form.trailerUrl || ''} onChange={e => onChange('trailerUrl', e.target.value)} placeholder="YouTube Trailer Link (optional)" />
+      <button type="submit">Save</button>
+    </form>
+  </Modal>
+));
+
+const ReviewForm = React.memo(({ form, onChange, onSubmit, type, games }: { 
+  form: Omit<Review, 'id'>, 
+  onChange: (field: keyof Omit<Review, 'id'>, value: string | number | boolean) => void,
+  onSubmit: (e: React.FormEvent) => void,
+  type: string,
+  games: Game[]
+}) => (
+  <Modal title={type === 'addReview' ? 'Add Review' : 'Edit Review'} onClose={() => {}}>
+    <form onSubmit={onSubmit}>
+      <select value={form.gameId} onChange={e => onChange('gameId', e.target.value)} required>
+        <option value="">Select Game</option>
+        {games.map(g => <option key={g.id} value={g.id}>{g.title}</option>)}
+      </select>
+      <input value={form.username} onChange={e => onChange('username', e.target.value)} placeholder="Username" required />
+      <textarea value={form.content} onChange={e => onChange('content', e.target.value)} placeholder="Review" required />
+      <input type="date" value={form.date} onChange={e => onChange('date', e.target.value)} required />
+      <input type="number" value={form.rating} onChange={e => onChange('rating', Number(e.target.value))} min={1} max={5} required />
+      <input type="number" value={form.helpful} onChange={e => onChange('helpful', Number(e.target.value))} min={0} placeholder="Helpful count" />
+      <label><input type="checkbox" checked={form.verified} onChange={e => onChange('verified', e.target.checked)} /> Verified</label>
+      <button type="submit">Save</button>
+    </form>
+  </Modal>
+));
+
+const PurchaseForm = React.memo(({ form, onChange, onSubmit, users, games }: { 
+  form: Omit<Purchase, 'id'>, 
+  onChange: (field: keyof Omit<Purchase, 'id'>, value: string | number) => void,
+  onSubmit: (e: React.FormEvent) => void,
+  users: User[],
+  games: Game[]
+}) => (
+  <Modal title="Add Purchase" onClose={() => {}}>
+    <form onSubmit={onSubmit}>
+      <select value={form.userId} onChange={e => onChange('userId', e.target.value)} required>
+        <option value="">Select User</option>
+        {users.map(u => <option key={u.id} value={u.id}>{u.username}</option>)}
+      </select>
+      <select value={form.gameId} onChange={e => onChange('gameId', e.target.value)} required>
+        <option value="">Select Game</option>
+        {games.map(g => <option key={g.id} value={g.id}>{g.title}</option>)}
+      </select>
+      <input type="number" value={form.price} onChange={e => onChange('price', Number(e.target.value))} placeholder="Price" required />
+      <input type="date" value={form.purchaseDate} onChange={e => onChange('purchaseDate', e.target.value)} required />
+      <input value={form.paymentMethod} onChange={e => onChange('paymentMethod', e.target.value)} placeholder="Payment Method" required />
+      <input value={form.transactionKey} onChange={e => onChange('transactionKey', e.target.value)} placeholder="Transaction Key" required />
+      <button type="submit">Save</button>
+    </form>
+  </Modal>
+));
 
 const AdminPage: React.FC<{ onLogout: () => void }> = ({ onLogout }) => {
   const navigate = useNavigate();
-  const [activeTab, setActiveTab] = useState<'overview' | 'users' | 'games' | 'purchases' | 'reviews'>('overview');
+  const [activeTab, setActiveTab] = useState<Tab>('overview');
+  const [users, setUsers] = useState<User[]>([]);
+  const [games, setGames] = useState<Game[]>([]);
+  const [reviews, setReviews] = useState<Review[]>([]);
+  const [purchases, setPurchases] = useState<Purchase[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+  const [modal, setModal] = useState<{type: string, data?: any} | null>(null);
+  
+  // Form states
+  const [userForm, setUserForm] = useState<Omit<User, 'id'>>({ username: '', email: '', password: '', role: '' });
+  const [gameForm, setGameForm] = useState<Omit<Game, 'id'>>({ title: '', releaseDate: '', rating: 5, description: '', backgroundImage: '', price: 0, trailerUrl: '' });
+  const [reviewForm, setReviewForm] = useState<Omit<Review, 'id'>>({ gameId: '', username: '', content: '', date: '', rating: 5, helpful: 0, verified: false });
+  const [purchaseForm, setPurchaseForm] = useState<Omit<Purchase, 'id'>>({ userId: '', gameId: '', price: 0, purchaseDate: '', paymentMethod: '', transactionKey: '' });
 
-  // Sample data
-  const users: User[] = [
-    { id: '1', name: 'John Doe', email: 'john@example.com', joinDate: '2024-01-15', totalPurchases: 5, totalSpent: 149.99 },
-    { id: '2', name: 'Jane Smith', email: 'jane@example.com', joinDate: '2024-01-10', totalPurchases: 3, totalSpent: 89.99 },
-    { id: '3', name: 'Mike Johnson', email: 'mike@example.com', joinDate: '2024-01-08', totalPurchases: 7, totalSpent: 199.99 },
-    { id: '4', name: 'Sarah Wilson', email: 'sarah@example.com', joinDate: '2024-01-05', totalPurchases: 2, totalSpent: 59.99 },
-    { id: '5', name: 'Alex Brown', email: 'alex@example.com', joinDate: '2024-01-03', totalPurchases: 4, totalSpent: 119.99 },
-  ];
+  // Optimized form handlers
+  const handleUserFormChange = useCallback((field: keyof Omit<User, 'id'>, value: string) => {
+    setUserForm(prev => ({ ...prev, [field]: value }));
+  }, []);
 
-  const games: Game[] = [
-    { id: '1', title: 'Elden Ring', price: 39.99, sales: 150, revenue: 5998.50, reviews: 45, averageRating: 4.8 },
-    { id: '2', title: 'GTA V', price: 29.99, sales: 200, revenue: 5998.00, reviews: 38, averageRating: 4.5 },
-    { id: '3', title: 'The Witcher 3', price: 19.99, sales: 180, revenue: 3598.20, reviews: 52, averageRating: 4.9 },
-    { id: '4', title: 'Cyberpunk 2077', price: 24.99, sales: 120, revenue: 2998.80, reviews: 28, averageRating: 4.2 },
-    { id: '5', title: 'Red Dead Redemption 2', price: 34.99, sales: 95, revenue: 3324.05, reviews: 31, averageRating: 4.7 },
-  ];
+  const handleGameFormChange = useCallback((field: keyof Omit<Game, 'id'>, value: string | number) => {
+    setGameForm(prev => ({ ...prev, [field]: value }));
+  }, []);
 
-  const purchases: Purchase[] = [
-    { id: '1', userId: '1', userName: 'John Doe', gameId: '1', gameTitle: 'Elden Ring', price: 39.99, purchaseDate: '2024-01-20', paymentMethod: 'Credit Card', transactionKey: 'TXN-2024-001-001' },
-    { id: '2', userId: '2', userName: 'Jane Smith', gameId: '2', gameTitle: 'GTA V', price: 29.99, purchaseDate: '2024-01-19', paymentMethod: 'PayPal', transactionKey: 'TXN-2024-001-002' },
-    { id: '3', userId: '3', userName: 'Mike Johnson', gameId: '3', gameTitle: 'The Witcher 3', price: 19.99, purchaseDate: '2024-01-18', paymentMethod: 'Credit Card', transactionKey: 'TXN-2024-001-003' },
-    { id: '4', userId: '1', userName: 'John Doe', gameId: '4', gameTitle: 'Cyberpunk 2077', price: 24.99, purchaseDate: '2024-01-17', paymentMethod: 'Credit Card', transactionKey: 'TXN-2024-001-004' },
-    { id: '5', userId: '4', userName: 'Sarah Wilson', gameId: '5', gameTitle: 'Red Dead Redemption 2', price: 34.99, purchaseDate: '2024-01-16', paymentMethod: 'PayPal', transactionKey: 'TXN-2024-001-005' },
-  ];
+  const handleReviewFormChange = useCallback((field: keyof Omit<Review, 'id'>, value: string | number | boolean) => {
+    setReviewForm(prev => ({ ...prev, [field]: value }));
+  }, []);
 
-  const reviews: Review[] = [
-    { id: '1', userId: '1', userName: 'John Doe', gameId: '1', gameTitle: 'Elden Ring', rating: 5, comment: 'Amazing game!', reviewDate: '2024-01-21', helpful: 12, verified: true },
-    { id: '2', userId: '2', userName: 'Jane Smith', gameId: '2', gameTitle: 'GTA V', rating: 4, comment: 'Great gameplay', reviewDate: '2024-01-20', helpful: 8, verified: true },
-    { id: '3', userId: '3', userName: 'Mike Johnson', gameId: '3', gameTitle: 'The Witcher 3', rating: 5, comment: 'Masterpiece!', reviewDate: '2024-01-19', helpful: 15, verified: true },
-    { id: '4', userId: '1', userName: 'John Doe', gameId: '4', gameTitle: 'Cyberpunk 2077', rating: 4, comment: 'Good but has bugs', reviewDate: '2024-01-18', helpful: 6, verified: true },
-    { id: '5', userId: '4', userName: 'Sarah Wilson', gameId: '5', gameTitle: 'Red Dead Redemption 2', rating: 5, comment: 'Beautiful game', reviewDate: '2024-01-17', helpful: 10, verified: true },
-  ];
+  const handlePurchaseFormChange = useCallback((field: keyof Omit<Purchase, 'id'>, value: string | number) => {
+    setPurchaseForm(prev => ({ ...prev, [field]: value }));
+  }, []);
 
-  // Calculate totals
+  // Reset forms when modal opens
+  useEffect(() => {
+    if (modal) {
+      if (modal.type === 'addUser' || modal.type === 'editUser') {
+        setUserForm(modal.data || { username: '', email: '', password: '', role: '' });
+      } else if (modal.type === 'addGame' || modal.type === 'editGame') {
+        setGameForm(modal.data || { title: '', releaseDate: '', rating: 5, description: '', backgroundImage: '', price: 0, trailerUrl: '' });
+      } else if (modal.type === 'addReview' || modal.type === 'editReview') {
+        setReviewForm(modal.data || { gameId: '', username: '', content: '', date: '', rating: 5, helpful: 0, verified: false });
+      } else if (modal.type === 'addPurchase') {
+        setPurchaseForm(modal.data || { userId: '', gameId: '', price: 0, purchaseDate: '', paymentMethod: '', transactionKey: '' });
+      }
+    }
+  }, [modal]);
+
+  // Fetch all data
+  const fetchAll = async () => {
+    setLoading(true);
+    setError('');
+    try {
+      console.log('Fetching data from API...');
+      const [usersRes, gamesRes, reviewsRes, purchasesRes] = await Promise.all([
+        fetch(`${API}/users`),
+        fetch(`${API}/games`),
+        fetch(`${API}/reviews`),
+        fetch(`${API}/purchases`)
+      ]);
+      
+      console.log('API responses:', {
+        users: usersRes.status,
+        games: gamesRes.status,
+        reviews: reviewsRes.status,
+        purchases: purchasesRes.status
+      });
+      
+      if (!usersRes.ok || !gamesRes.ok || !reviewsRes.ok || !purchasesRes.ok) {
+        console.error('One or more API calls failed:', {
+          users: usersRes.status,
+          games: gamesRes.status,
+          reviews: reviewsRes.status,
+          purchases: purchasesRes.status
+        });
+        throw new Error('Failed to fetch data');
+      }
+      
+      const usersData = await usersRes.json();
+      const gamesData = await gamesRes.json();
+      const reviewsData = await reviewsRes.json();
+      const purchasesData = await purchasesRes.json();
+      
+      console.log('Fetched data:', {
+        users: usersData.length,
+        games: gamesData.length,
+        reviews: reviewsData.length,
+        purchases: purchasesData.length
+      });
+      
+      console.log('Purchases data:', purchasesData);
+      
+      setUsers(usersData);
+      setGames(gamesData);
+      setReviews(reviewsData);
+      setPurchases(purchasesData);
+    } catch (err) {
+      console.error('Fetch error:', err);
+      setError('Could not load data.');
+    }
+    setLoading(false);
+  };
+
+  useEffect(() => { fetchAll(); }, []);
+
+  // --- CRUD Helpers ---
+  // Users
+  const addUser = async (user: Omit<User, 'id'>) => {
+    setLoading(true);
+    try {
+      await fetch(`${API}/users`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(user)
+      });
+      await fetchAll();
+      setModal(null);
+    } catch (err) { setError('Failed to add user.'); }
+    setLoading(false);
+  };
+  const editUser = async (user: User) => {
+    setLoading(true);
+    try {
+      await fetch(`${API}/users/${user.id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(user)
+      });
+      await fetchAll();
+      setModal(null);
+    } catch (err) { setError('Failed to edit user.'); }
+    setLoading(false);
+  };
+  const deleteUser = async (id: string) => {
+    if (!window.confirm('Delete this user?')) return;
+    setLoading(true);
+    try {
+      await fetch(`${API}/users/${id}`, { method: 'DELETE' });
+      await fetchAll();
+    } catch (err) { setError('Failed to delete user.'); }
+    setLoading(false);
+  };
+  // Games
+  const addGame = async (game: Omit<Game, 'id'>) => {
+    setLoading(true);
+    try {
+      await fetch(`${API}/games`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(game)
+      });
+      await fetchAll();
+      setModal(null);
+    } catch (err) { setError('Failed to add game.'); }
+    setLoading(false);
+  };
+  const editGame = async (game: Game) => {
+    setLoading(true);
+    try {
+      await fetch(`${API}/games/${game.id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(game)
+      });
+      await fetchAll();
+      setModal(null);
+    } catch (err) { setError('Failed to edit game.'); }
+    setLoading(false);
+  };
+  const deleteGame = async (id: string) => {
+    if (!window.confirm('Delete this game?')) return;
+    setLoading(true);
+    try {
+      await fetch(`${API}/games/${id}`, { method: 'DELETE' });
+      await fetchAll();
+    } catch (err) { setError('Failed to delete game.'); }
+    setLoading(false);
+  };
+  // Reviews
+  const addReview = async (review: Omit<Review, 'id'>) => {
+    setLoading(true);
+    try {
+      await fetch(`${API}/reviews`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(review)
+      });
+      await fetchAll();
+      setModal(null);
+    } catch (err) { setError('Failed to add review.'); }
+    setLoading(false);
+  };
+  const editReview = async (review: Review) => {
+    setLoading(true);
+    try {
+      await fetch(`${API}/reviews/${review.id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(review)
+      });
+      await fetchAll();
+      setModal(null);
+    } catch (err) { setError('Failed to edit review.'); }
+    setLoading(false);
+  };
+  const deleteReview = async (id: string) => {
+    if (!window.confirm('Delete this review?')) return;
+    setLoading(true);
+    try {
+      await fetch(`${API}/reviews/${id}`, { method: 'DELETE' });
+      await fetchAll();
+    } catch (err) { setError('Failed to delete review.'); }
+    setLoading(false);
+  };
+  // Purchases
+  const addPurchase = async (purchase: Omit<Purchase, 'id'>) => {
+    setLoading(true);
+    try {
+      await fetch(`${API}/purchases`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(purchase)
+      });
+      await fetchAll();
+      setModal(null);
+    } catch (err) { setError('Failed to add purchase.'); }
+    setLoading(false);
+  };
+  const deletePurchase = async (id: string) => {
+    if (!window.confirm('Delete this purchase?')) return;
+    setLoading(true);
+    try {
+      console.log('=== DELETE PURCHASE DEBUG ===');
+      console.log('Deleting purchase with ID:', id);
+      console.log('Current purchases before delete:', purchases);
+      console.log('Purchase to delete:', purchases.find(p => p.id === id));
+      
+      // Try the standard DELETE method first
+      const response = await fetch(`${API}/purchases/${id}`, { 
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+        }
+      });
+      
+      console.log('Delete response status:', response.status);
+      console.log('Delete response headers:', response.headers);
+      
+      if (!response.ok) {
+        throw new Error(`Failed to delete purchase: ${response.status}`);
+      }
+      
+      // Check if the delete was successful by fetching purchases again
+      const checkResponse = await fetch(`${API}/purchases`);
+      const remainingPurchases = await checkResponse.json();
+      console.log('Remaining purchases after delete:', remainingPurchases);
+      console.log('=== END DELETE DEBUG ===');
+      
+      await fetchAll();
+    } catch (err) { 
+      console.error('Delete purchase error:', err);
+      setError('Failed to delete purchase.'); 
+    }
+    setLoading(false);
+  };
+
+  // --- Stats ---
   const totalUsers = users.length;
   const totalGames = games.length;
   const totalPurchases = purchases.length;
   const totalRevenue = purchases.reduce((sum, p) => sum + p.price, 0);
   const totalReviews = reviews.length;
-  const averageRating = reviews.reduce((sum, r) => sum + r.rating, 0) / reviews.length;
+  const averageRating = reviews.length ? (reviews.reduce((sum, r) => sum + r.rating, 0) / reviews.length) : 0;
 
-  const renderStars = (rating: number) => {
-    const stars = [];
-    for (let i = 1; i <= 5; i++) {
-      stars.push(
-        <span key={i} className={i <= rating ? 'star' : 'star-inactive'}>
-          ★
-        </span>
+  // --- Render ---
+  const renderModal = useMemo(() => {
+    if (!modal) return null;
+    const { type } = modal;
+    
+    if (type === 'addUser' || type === 'editUser') {
+      return (
+        <UserForm
+          form={userForm}
+          onChange={handleUserFormChange}
+          onSubmit={(e) => { e.preventDefault(); type === 'addUser' ? addUser(userForm) : editUser(userForm as User); }}
+          type={type}
+        />
       );
     }
-    return stars;
-  };
+    
+    if (type === 'addGame' || type === 'editGame') {
+      return (
+        <GameForm
+          form={gameForm}
+          onChange={handleGameFormChange}
+          onSubmit={(e) => { e.preventDefault(); type === 'addGame' ? addGame(gameForm) : editGame(gameForm as Game); }}
+          type={type}
+        />
+      );
+    }
+    
+    if (type === 'addReview' || type === 'editReview') {
+      return (
+        <ReviewForm
+          form={reviewForm}
+          onChange={handleReviewFormChange}
+          onSubmit={(e) => { e.preventDefault(); type === 'addReview' ? addReview(reviewForm) : editReview(reviewForm as Review); }}
+          type={type}
+          games={games}
+        />
+      );
+    }
+    
+    if (type === 'addPurchase') {
+      return (
+        <PurchaseForm
+          form={purchaseForm}
+          onChange={handlePurchaseFormChange}
+          onSubmit={(e) => { e.preventDefault(); addPurchase(purchaseForm); }}
+          users={users}
+          games={games}
+        />
+      );
+    }
+    
+    return null;
+  }, [modal, userForm, gameForm, reviewForm, purchaseForm, users, games, handleUserFormChange, handleGameFormChange, handleReviewFormChange, handlePurchaseFormChange]);
 
-  const handleBackToStore = () => {
-    navigate('/');
-  };
-
-  const handleLogout = () => {
-    onLogout();
-    navigate('/');
-  };
+  // --- Render Table Rows ---
+  const getGameTitle = (id: string) => games.find(g => g.id === id)?.title || id;
+  const getUserName = (id: string) => users.find(u => u.id === id)?.username || id;
 
   return (
-    <div className="admin-page">
-      <div className="admin-header">
-        <div className="admin-header-content">
-          <div className="admin-header-left">
-            <button className="back-button" onClick={handleBackToStore}>
-              ← Back to Store
-            </button>
-            <h1>Admin Report Dashboard</h1>
+    <div className={styles['admin-page']}>
+      <div className={styles['admin-header']}>
+        <div className={styles['admin-header-content']}>
+          <div className={styles['admin-header-left']}>
+            <button className={styles['back-button']} onClick={() => navigate('/')}>← Back to Store</button>
+            <h1>Admin Dashboard</h1>
           </div>
-          <div className="admin-header-right">
-            <span className="admin-badge">Administrator</span>
-            <button className="logout-button" onClick={handleLogout}>
-              Logout
-            </button>
+          <div className={styles['admin-header-right']}>
+            <span className={styles['admin-badge']}>Administrator</span>
+            <button className={styles['logout-button']} onClick={() => { onLogout(); navigate('/'); }}>Logout</button>
           </div>
         </div>
       </div>
-
-      <div className="admin-tabs">
-        <button 
-          className={`admin-tab ${activeTab === 'overview' ? 'active' : ''}`}
-          onClick={() => setActiveTab('overview')}
-        >
-          Overview
-        </button>
-        <button 
-          className={`admin-tab ${activeTab === 'users' ? 'active' : ''}`}
-          onClick={() => setActiveTab('users')}
-        >
-          Users
-        </button>
-        <button 
-          className={`admin-tab ${activeTab === 'games' ? 'active' : ''}`}
-          onClick={() => setActiveTab('games')}
-        >
-          Games
-        </button>
-        <button 
-          className={`admin-tab ${activeTab === 'purchases' ? 'active' : ''}`}
-          onClick={() => setActiveTab('purchases')}
-        >
-          Purchases
-        </button>
-        <button 
-          className={`admin-tab ${activeTab === 'reviews' ? 'active' : ''}`}
-          onClick={() => setActiveTab('reviews')}
-        >
-          Reviews
-        </button>
+      <div className={styles['admin-tabs']}>
+        {(['overview', 'users', 'games', 'purchases', 'reviews'] as Tab[]).map(tab => (
+          <button key={tab} className={`${styles['admin-tab']} ${activeTab === tab ? styles.active : ''}`} onClick={() => setActiveTab(tab)}>{tab.charAt(0).toUpperCase() + tab.slice(1)}</button>
+        ))}
       </div>
-
-      <div className="admin-content">
-        {activeTab === 'overview' && (
-          <div className="overview-section">
-            <div className="stats-grid">
-              <div className="stat-card">
-                <h3>Total Users</h3>
-                <div className="stat-number">{totalUsers}</div>
+      <div className={styles['admin-content']}>
+        {loading ? <div style={{ textAlign: 'center', padding: 40 }}>Loading...</div> : error ? <div style={{ color: 'red', textAlign: 'center', padding: 40 }}>{error}</div> : (
+          <>
+            {activeTab === 'overview' && (
+              <div className={styles['overview-section']}>
+                <div className={styles['stats-grid']}>
+                  <div className={styles['stat-card']}><h3>Total Users</h3><div className={styles['stat-number']}>{totalUsers}</div></div>
+                  <div className={styles['stat-card']}><h3>Total Games</h3><div className={styles['stat-number']}>{totalGames}</div></div>
+                  <div className={styles['stat-card']}><h3>Total Purchases</h3><div className={styles['stat-number']}>{totalPurchases}</div></div>
+                  <div className={styles['stat-card']}><h3>Total Revenue</h3><div className={styles['stat-number']}>${totalRevenue.toFixed(2)}</div></div>
+                  <div className={styles['stat-card']}><h3>Total Reviews</h3><div className={styles['stat-number']}>{totalReviews}</div></div>
+                  <div className={styles['stat-card']}><h3>Average Rating</h3><div className={styles['stat-number']}>{averageRating.toFixed(1)}</div></div>
+                </div>
               </div>
-              <div className="stat-card">
-                <h3>Total Games</h3>
-                <div className="stat-number">{totalGames}</div>
+            )}
+            {activeTab === 'users' && (
+              <div className={styles['users-section']}>
+                <h3>Users</h3>
+                <div className={styles['table-container']}>
+                  <table className={styles['admin-table']}>
+                    <thead><tr><th>ID</th><th>Username</th><th>Email</th><th>Role</th><th>Actions</th></tr></thead>
+                    <tbody>
+                      {users.map(user => (
+                        <tr key={user.id}>
+                          <td>{user.id}</td>
+                          <td>{user.username}</td>
+                          <td>{user.email}</td>
+                          <td>{user.role || 'user'}</td>
+                          <td>
+                            <button onClick={() => setModal({ type: 'editUser', data: user })}>Edit</button>
+                            <button onClick={() => deleteUser(user.id)}>Delete</button>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
               </div>
-              <div className="stat-card">
-                <h3>Total Purchases</h3>
-                <div className="stat-number">{totalPurchases}</div>
+            )}
+            {activeTab === 'games' && (
+              <div className={styles['games-section']}>
+                <h3>Games <button onClick={() => setModal({ type: 'addGame' })}>+ Add Game</button></h3>
+                {error && (
+                  <div style={{ color: 'red', marginBottom: 16 }}>
+                    Failed to load games: {error}
+                  </div>
+                )}
+                <div className={styles['table-container']}>
+                  <table className={styles['admin-table']}>
+                    <thead><tr><th>ID</th><th>Title</th><th>Release Date</th><th>Rating</th><th>Price</th><th>Actions</th></tr></thead>
+                    <tbody>
+                      {games.length === 0 && !loading && !error ? (
+                        <tr><td colSpan={6} style={{ textAlign: 'center' }}>No games found.</td></tr>
+                      ) : (
+                        games.map(game => (
+                          <tr key={game.id}>
+                            <td>{game.id}</td>
+                            <td>{game.title}</td>
+                            <td>{game.releaseDate}</td>
+                            <td>{game.rating}</td>
+                            <td>${game.price}</td>
+                            <td>
+                              <button onClick={() => setModal({ type: 'editGame', data: game })}>Edit</button>
+                              <button onClick={() => deleteGame(game.id)}>Delete</button>
+                            </td>
+                          </tr>
+                        ))
+                      )}
+                    </tbody>
+                  </table>
+                </div>
               </div>
-              <div className="stat-card">
-                <h3>Total Revenue</h3>
-                <div className="stat-number">${totalRevenue.toFixed(2)}</div>
+            )}
+            {activeTab === 'purchases' && (
+              <div className={styles['purchases-section']}>
+                <h3>Purchases</h3>
+                <div className={styles['table-container']}>
+                  <table className={styles['admin-table']}>
+                    <thead><tr><th>ID</th><th>User</th><th>Game</th><th>Price</th><th>Date</th><th>Payment</th><th>Actions</th></tr></thead>
+                    <tbody>
+                      {purchases.map(purchase => (
+                        <tr key={purchase.id}>
+                          <td>{purchase.id}</td>
+                          <td>{getUserName(purchase.userId)}</td>
+                          <td>{getGameTitle(purchase.gameId)}</td>
+                          <td>${purchase.price}</td>
+                          <td>{purchase.purchaseDate}</td>
+                          <td>{purchase.paymentMethod}</td>
+                          <td>
+                            <button onClick={() => deletePurchase(purchase.id)}>Delete</button>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
               </div>
-              <div className="stat-card">
-                <h3>Total Reviews</h3>
-                <div className="stat-number">{totalReviews}</div>
+            )}
+            {activeTab === 'reviews' && (
+              <div className={styles['reviews-section']}>
+                <h3>Reviews</h3>
+                <div className={styles['table-container']}>
+                  <table className={styles['admin-table']}>
+                    <thead><tr><th>ID</th><th>Game</th><th>User</th><th>Rating</th><th>Content</th><th>Date</th><th>Actions</th></tr></thead>
+                    <tbody>
+                      {reviews.map(review => (
+                        <tr key={review.id}>
+                          <td>{review.id}</td>
+                          <td>{getGameTitle(review.gameId)}</td>
+                          <td>{review.username}</td>
+                          <td>{review.rating}/5</td>
+                          <td className={styles['review-comment']}>{review.content}</td>
+                          <td>{review.date}</td>
+                          <td>
+                            <button onClick={() => setModal({ type: 'editReview', data: review })}>Edit</button>
+                            <button onClick={() => deleteReview(review.id)}>Delete</button>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
               </div>
-              <div className="stat-card">
-                <h3>Average Rating</h3>
-                <div className="stat-number">{averageRating.toFixed(1)}</div>
-              </div>
-            </div>
-          </div>
+            )}
+          </>
         )}
-
-        {activeTab === 'users' && (
-          <div className="users-section">
-            <h3>User Management</h3>
-            <div className="table-container">
-              <table className="admin-table">
-                <thead>
-                  <tr>
-                    <th>User ID</th>
-                    <th>Name</th>
-                    <th>Email</th>
-                    <th>Join Date</th>
-                    <th>Purchases</th>
-                    <th>Total Spent</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {users.map(user => (
-                    <tr key={user.id}>
-                      <td>{user.id}</td>
-                      <td>{user.name}</td>
-                      <td>{user.email}</td>
-                      <td>{user.joinDate}</td>
-                      <td>{user.totalPurchases}</td>
-                      <td>${user.totalSpent}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </div>
-        )}
-
-        {activeTab === 'games' && (
-          <div className="games-section">
-            <h3>Game Performance</h3>
-            <div className="table-container">
-              <table className="admin-table">
-                <thead>
-                  <tr>
-                    <th>Game ID</th>
-                    <th>Title</th>
-                    <th>Price</th>
-                    <th>Sales</th>
-                    <th>Revenue</th>
-                    <th>Reviews</th>
-                    <th>Rating</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {games.map(game => (
-                    <tr key={game.id}>
-                      <td>{game.id}</td>
-                      <td>{game.title}</td>
-                      <td>${game.price}</td>
-                      <td>{game.sales}</td>
-                      <td>${game.revenue}</td>
-                      <td>{game.reviews}</td>
-                      <td>
-                        <div className="rating-display">
-                          {renderStars(game.averageRating)}
-                          <span>({game.averageRating})</span>
-                        </div>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </div>
-        )}
-
-        {activeTab === 'purchases' && (
-          <div className="purchases-section">
-            <h3>Purchase Transactions</h3>
-            <div className="table-container">
-              <table className="admin-table">
-                <thead>
-                  <tr>
-                    <th>Transaction ID</th>
-                    <th>User</th>
-                    <th>Game</th>
-                    <th>Price</th>
-                    <th>Date</th>
-                    <th>Payment Method</th>
-                    <th>Transaction Key</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {purchases.map(purchase => (
-                    <tr key={purchase.id}>
-                      <td>{purchase.id}</td>
-                      <td>{purchase.userName}</td>
-                      <td>{purchase.gameTitle}</td>
-                      <td>${purchase.price}</td>
-                      <td>{purchase.purchaseDate}</td>
-                      <td>{purchase.paymentMethod}</td>
-                      <td className="transaction-key">{purchase.transactionKey}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </div>
-        )}
-
-        {activeTab === 'reviews' && (
-          <div className="reviews-section">
-            <h3>User Reviews</h3>
-            <div className="table-container">
-              <table className="admin-table">
-                <thead>
-                  <tr>
-                    <th>Review ID</th>
-                    <th>User</th>
-                    <th>Game</th>
-                    <th>Rating</th>
-                    <th>Comment</th>
-                    <th>Date</th>
-                    <th>Helpful</th>
-                    <th>Verified</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {reviews.map(review => (
-                    <tr key={review.id}>
-                      <td>{review.id}</td>
-                      <td>{review.userName}</td>
-                      <td>{review.gameTitle}</td>
-                      <td>
-                        <div className="rating-display">
-                          {renderStars(review.rating)}
-                        </div>
-                      </td>
-                      <td className="review-comment">{review.comment}</td>
-                      <td>{review.reviewDate}</td>
-                      <td>{review.helpful}</td>
-                      <td>{review.verified ? '✓' : '✗'}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </div>
-        )}
+        {modal && renderModal}
       </div>
     </div>
   );

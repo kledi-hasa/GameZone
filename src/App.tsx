@@ -9,6 +9,7 @@ import LoginModal from "./components/LoginModal.tsx";
 import ProtectedRoute from "./components/ProtectedRoute.tsx";
 import Footer from "./components/Footer.tsx";
 import GameCarousel from './components/GameCarousel.tsx';
+import CheckoutModal from './components/CheckoutModal.tsx';
 import { useState, useEffect } from 'react';
 
 function HomePage({ 
@@ -27,6 +28,7 @@ function HomePage({
   setLoginError: (value: string) => void;
 }) {
   const navigate = useNavigate();
+  const [currentUser, setCurrentUser] = useState<{id: string; username: string; email: string; role?: string} | null>(null);
   
   // List of games
   const games = [
@@ -242,14 +244,44 @@ function HomePage({
     },
   ];
 
-  // State management
+  // State management with localStorage persistence
   const [searchQuery, setSearchQuery] = useState('');
-  const [favorites, setFavorites] = useState<string[]>([]);
-  const [cart, setCart] = useState<string[]>([]);
+  
+  // Load favorites from localStorage on component mount
+  const [favorites, setFavorites] = useState<string[]>(() => {
+    const savedFavorites = localStorage.getItem('gamezone_favorites');
+    return savedFavorites ? JSON.parse(savedFavorites) : [];
+  });
+  
+  // Load cart from localStorage on component mount
+  const [cart, setCart] = useState<string[]>(() => {
+    const savedCart = localStorage.getItem('gamezone_cart');
+    return savedCart ? JSON.parse(savedCart) : [];
+  });
+  
   const [showFavorites, setShowFavorites] = useState(false);
   const [showCart, setShowCart] = useState(false);
   const [isVideoModalOpen, setIsVideoModalOpen] = useState(false);
   const [selectedVideo, setSelectedVideo] = useState<{ url: string; title: string } | null>(null);
+  const [isCheckoutModalOpen, setIsCheckoutModalOpen] = useState(false);
+
+  // Load current user from localStorage on component mount
+  useEffect(() => {
+    const savedUser = localStorage.getItem('gamezone_currentUser');
+    if (savedUser) {
+      setCurrentUser(JSON.parse(savedUser));
+    }
+  }, []);
+
+  // Save favorites to localStorage whenever they change
+  useEffect(() => {
+    localStorage.setItem('gamezone_favorites', JSON.stringify(favorites));
+  }, [favorites]);
+
+  // Save cart to localStorage whenever it changes
+  useEffect(() => {
+    localStorage.setItem('gamezone_cart', JSON.stringify(cart));
+  }, [cart]);
 
   // Debug VideoModal state
   useEffect(() => {
@@ -341,6 +373,15 @@ function HomePage({
   const handleLogin = (username: string, password: string) => {
     // Simple authentication - in real app, this would be an API call
     if (username === 'admin' && password === 'admin123') {
+      const adminUser = {
+        id: 'admin',
+        username: 'Admin',
+        email: 'admin',
+        role: 'admin'
+      };
+      setCurrentUser(adminUser);
+      localStorage.setItem('gamezone_currentUser', JSON.stringify(adminUser));
+      localStorage.setItem('gamezone_isAuthenticated', 'true');
       setIsAuthenticated(true);
       setIsLoginModalOpen(false);
       setLoginError('');
@@ -363,6 +404,44 @@ function HomePage({
   // Get cart games
   const getCartGames = () => {
     return games.filter(game => cart.includes(game.title));
+  };
+
+  // Handle checkout
+  const handleCheckout = async (purchaseData: {
+    userId: string;
+    gameId: string;
+    price: number;
+    purchaseDate: string;
+    paymentMethod: string;
+    transactionKey: string;
+  }) => {
+    try {
+      const response = await fetch('http://localhost:3000/purchases', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(purchaseData),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to save purchase');
+      }
+
+      console.log('Purchase saved successfully:', purchaseData);
+    } catch (error) {
+      console.error('Error saving purchase:', error);
+      throw error;
+    }
+  };
+
+  // Handle checkout completion
+  const handleCheckoutComplete = () => {
+    // Clear cart after successful checkout
+    setCart([]);
+    localStorage.setItem('gamezone_cart', JSON.stringify([]));
+    setIsCheckoutModalOpen(false);
+    alert('Purchase completed successfully! Your games are now available in your library.');
   };
 
   const onAddGame = (newGame: any) => {
@@ -390,6 +469,10 @@ function HomePage({
           favoritesCount={favorites.length}
           cartCount={cart.length}
           onLogoClick={handleLogoClick}
+          isAuthenticated={isAuthenticated}
+          setIsAuthenticated={setIsAuthenticated}
+          currentUser={currentUser}
+          setCurrentUser={setCurrentUser}
         />
       </div>
       
@@ -471,49 +554,87 @@ function HomePage({
         )
       ) : showCart ? (
         // Show cart games
-        getCartGames().length > 0 ? (
-          getCartGames().map((game, idx) => (
-            <GameBanner
-              key={idx}
-              title={game.title}
-              releaseDate={game.releaseDate}
-              rating={game.rating}
-              description={game.description}
-              backgroundImage={game.backgroundImage}
-              price={game.price}
-              trailerUrl={game.trailerUrl}
-              isFavorited={favorites.includes(game.title)}
-              isInCart={cart.includes(game.title)}
-              onPlayTrailer={() => handlePlayTrailer(game.trailerUrl, game.title)}
-              onAddToFavorites={() => handleAddToFavorites(game.title)}
-              onAddToCart={() => handleAddToCart(game.title)}
-              onAddReview={() => handleAddReview(game.title)}
-            />
-          ))
-        ) : (
-          <div className="empty-state" style={{ 
-            textAlign: 'center', 
-            padding: '100px 50px', 
-            color: 'white',
-            fontSize: '1.2rem',
-            gridColumn: '1 / -1',
-            gridRow: '1 / -1',
-            display: 'flex',
-            flexDirection: 'column',
-            justifyContent: 'center',
-            alignItems: 'center',
-            background: 'rgba(0, 166, 81, 0.05)',
-            borderRadius: '16px',
-            border: '1px solid rgba(0, 166, 81, 0.1)',
-            margin: '20px 0',
-            height: '100%',
-            minHeight: 'calc(100vh - 300px)',
-            alignSelf: 'stretch'
-          }}>
-            <h3 style={{ marginBottom: '20px', fontSize: '2rem' }}>Your Cart is Empty</h3>
-            <p style={{ fontSize: '1.1rem', opacity: 0.8 }}>Add some games to your cart by clicking the Buy button!</p>
-          </div>
-        )
+        <>
+          {getCartGames().length > 0 ? (
+            <>
+              {getCartGames().map((game, idx) => (
+                <GameBanner
+                  key={idx}
+                  title={game.title}
+                  releaseDate={game.releaseDate}
+                  rating={game.rating}
+                  description={game.description}
+                  backgroundImage={game.backgroundImage}
+                  price={game.price}
+                  trailerUrl={game.trailerUrl}
+                  isFavorited={favorites.includes(game.title)}
+                  isInCart={cart.includes(game.title)}
+                  onPlayTrailer={() => handlePlayTrailer(game.trailerUrl, game.title)}
+                  onAddToFavorites={() => handleAddToFavorites(game.title)}
+                  onAddToCart={() => handleAddToCart(game.title)}
+                  onAddReview={() => handleAddReview(game.title)}
+                />
+              ))}
+              <div style={{ 
+                gridColumn: '1 / -1', 
+                display: 'flex', 
+                justifyContent: 'center', 
+                padding: '40px 20px',
+                marginTop: '20px'
+              }}>
+                <button
+                  onClick={() => setIsCheckoutModalOpen(true)}
+                  style={{
+                    background: 'linear-gradient(135deg, #00ffff 0%, #0096ff 100%)',
+                    color: '#000000',
+                    border: 'none',
+                    borderRadius: '12px',
+                    padding: '16px 32px',
+                    fontSize: '18px',
+                    fontWeight: '600',
+                    cursor: 'pointer',
+                    boxShadow: '0 8px 25px rgba(0, 255, 255, 0.3)',
+                    transition: 'all 0.3s ease',
+                    minWidth: '200px'
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.transform = 'translateY(-3px)';
+                    e.currentTarget.style.boxShadow = '0 12px 35px rgba(0, 255, 255, 0.4)';
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.transform = 'translateY(0)';
+                    e.currentTarget.style.boxShadow = '0 8px 25px rgba(0, 255, 255, 0.3)';
+                  }}
+                >
+                  Checkout - ${getCartGames().reduce((sum, game) => sum + game.price, 0).toFixed(2)}
+                </button>
+              </div>
+            </>
+          ) : (
+            <div className="empty-state" style={{ 
+              textAlign: 'center', 
+              padding: '100px 50px', 
+              color: 'white',
+              fontSize: '1.2rem',
+              gridColumn: '1 / -1',
+              gridRow: '1 / -1',
+              display: 'flex',
+              flexDirection: 'column',
+              justifyContent: 'center',
+              alignItems: 'center',
+              background: 'rgba(0, 166, 81, 0.05)',
+              borderRadius: '16px',
+              border: '1px solid rgba(0, 166, 81, 0.1)',
+              margin: '20px 0',
+              height: '100%',
+              minHeight: 'calc(100vh - 300px)',
+              alignSelf: 'stretch'
+            }}>
+              <h3 style={{ marginBottom: '20px', fontSize: '2rem' }}>Your Cart is Empty</h3>
+              <p style={{ fontSize: '1.1rem', opacity: 0.8 }}>Add some games to your cart by clicking the Buy button!</p>
+            </div>
+          )}
+        </>
       ) : filteredGames.length > 0 ? (
         filteredGames.map((game, idx) => (
           <GameBanner
@@ -595,17 +716,42 @@ function HomePage({
         error={loginError}
       />
 
+      <CheckoutModal
+        isOpen={isCheckoutModalOpen}
+        onClose={() => setIsCheckoutModalOpen(false)}
+        cartItems={getCartGames().map(game => ({
+          id: game.id.toString(),
+          title: game.title,
+          price: game.price
+        }))}
+        userId={currentUser?.id || 'guest-user'}
+        onCheckout={async (purchaseData) => {
+          await handleCheckout(purchaseData);
+          handleCheckoutComplete();
+        }}
+      />
+
     </div>
   );
 }
 
 function App() {
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  // Load authentication state from localStorage on app start
+  const [isAuthenticated, setIsAuthenticated] = useState(() => {
+    const savedAuth = localStorage.getItem('gamezone_isAuthenticated');
+    return savedAuth === 'true';
+  });
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
   const [loginError, setLoginError] = useState('');
 
   const handleLogout = () => {
     setIsAuthenticated(false);
+    // Clear all user-related data from localStorage
+    localStorage.removeItem('gamezone_isAuthenticated');
+    localStorage.removeItem('gamezone_currentUser');
+    // Optionally clear cart and favorites on logout (uncomment if desired)
+    // localStorage.removeItem('gamezone_cart');
+    // localStorage.removeItem('gamezone_favorites');
   };
 
   return (

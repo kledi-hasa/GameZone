@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import '../App.css';
+import UserProfile from './UserProfile';
 
 interface NavbarProps {
   onSearch: (query: string) => void;
@@ -11,6 +12,17 @@ interface NavbarProps {
   onAdminClick?: () => void;
   favoritesCount: number;
   cartCount: number;
+  isAuthenticated: boolean;
+  setIsAuthenticated: (value: boolean) => void;
+  currentUser: {id: string; username: string; email: string; role?: string} | null;
+  setCurrentUser: (user: {id: string; username: string; email: string; role?: string} | null) => void;
+}
+
+interface User {
+  id: string;
+  username: string;
+  email: string;
+  role?: string;
 }
 
 export default function Navbar({
@@ -22,10 +34,15 @@ export default function Navbar({
   onAdminClick,
   favoritesCount,
   cartCount,
+  isAuthenticated,
+  setIsAuthenticated,
+  currentUser,
+  setCurrentUser,
 }: NavbarProps) {
   const [searchQuery, setSearchQuery] = useState('');
   const [showLoginModal, setShowLoginModal] = useState(false);
   const [showSignupModal, setShowSignupModal] = useState(false);
+  const [showUserProfile, setShowUserProfile] = useState(false);
   const [formData, setFormData] = useState({
     username: '',
     email: '',
@@ -104,10 +121,21 @@ export default function Navbar({
 
     // Check for admin credentials first
     if (loginData.email === 'admin' && loginData.password === 'admin123') {
+      const adminUser = {
+        id: 'admin',
+        username: 'Admin',
+        email: 'admin',
+        role: 'admin'
+      };
+      setCurrentUser(adminUser);
       setLoginMessage('Admin login successful!');
       alert('Welcome, Admin!');
+      setIsAuthenticated(true);
       setLoginData({ email: '', password: '' });
       setShowLoginModal(false);
+      // Save to localStorage
+      localStorage.setItem('gamezone_currentUser', JSON.stringify(adminUser));
+      localStorage.setItem('gamezone_isAuthenticated', 'true');
       // Redirect to admin dashboard
       navigate('/admin');
       return;
@@ -115,18 +143,23 @@ export default function Navbar({
 
     // Regular user login
     try {
-      const response = await fetch('/db.json');
-      const data = await response.json();
+      const response = await fetch('http://localhost:3000/users');
+      const users = await response.json();
 
-      const user = data.users.find(
+      const user = users.find(
         (u: any) => u.email === loginData.email && u.password === loginData.password
       );
 
       if (user) {
+        setCurrentUser(user);
         setLoginMessage('Login successful!');
         alert(`Welcome back, ${user.username}!`);
+        setIsAuthenticated(true);
         setLoginData({ email: '', password: '' });
         setShowLoginModal(false);
+        // Save to localStorage
+        localStorage.setItem('gamezone_currentUser', JSON.stringify(user));
+        localStorage.setItem('gamezone_isAuthenticated', 'true');
       } else {
         setLoginMessage('Invalid email or password.');
       }
@@ -134,6 +167,15 @@ export default function Navbar({
       console.error('Login error:', error);
       setLoginMessage('Login failed. Please try again.');
     }
+  };
+
+  const handleLogout = () => {
+    setIsAuthenticated(false);
+    setCurrentUser(null);
+    // Clear localStorage
+    localStorage.removeItem('gamezone_isAuthenticated');
+    localStorage.removeItem('gamezone_currentUser');
+    alert('Logged out successfully!');
   };
 
   const closeLoginModal = () => {
@@ -146,6 +188,10 @@ export default function Navbar({
     setShowSignupModal(false);
     setFormData({ username: '', email: '', password: '', role: '' });
     setMessage('');
+  };
+
+  const closeUserProfile = () => {
+    setShowUserProfile(false);
   };
 
   return (
@@ -182,30 +228,199 @@ export default function Navbar({
               <button className="btn btn-outline-success me-2 position-relative" onClick={onShowCart}>
                 🛒 {cartCount > 0 && <span className="badge bg-danger">{cartCount}</span>}
               </button>
-              <button className="btn btn-light me-2" onClick={() => setShowLoginModal(true)}>🔐 Login</button>
-              <button className="btn btn-success" onClick={() => setShowSignupModal(true)}>📝 Sign Up</button>
+              
+              {isAuthenticated && currentUser ? (
+                <button 
+                  className="btn btn-primary me-2" 
+                  onClick={() => setShowUserProfile(true)}
+                  style={{ 
+                    background: 'linear-gradient(135deg, #00a651 0%, #00d4aa 100%)',
+                    border: 'none',
+                    color: 'white',
+                    fontWeight: '600'
+                  }}
+                >
+                  👤 {currentUser.username}
+                </button>
+              ) : (
+                <>
+                  <button className="btn btn-light me-2" onClick={() => setShowLoginModal(true)}>🔐 Login</button>
+                  <button className="btn btn-success" onClick={() => setShowSignupModal(true)}>📝 Sign Up</button>
+                </>
+              )}
             </div>
           </div>
         </div>
       </nav>
 
+      {/* User Profile Modal */}
+      {showUserProfile && currentUser && (
+        <div 
+          className="custom-modal-overlay" 
+          style={{
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            display: 'flex',
+            alignItems: 'flex-start',
+            justifyContent: 'center',
+            padding: '20px',
+            backgroundColor: 'rgba(0, 0, 0, 0.8)',
+            zIndex: 2000,
+            backdropFilter: 'blur(5px)'
+          }}
+          onClick={(e) => {
+            if (e.target === e.currentTarget) closeUserProfile();
+          }}
+        >
+          <div 
+            className="custom-modal-content"
+            style={{
+              background: 'linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%)',
+              borderRadius: '15px',
+              boxShadow: '0 20px 40px rgba(0, 0, 0, 0.5)',
+              maxWidth: '500px',
+              width: '100%',
+              maxHeight: '90vh',
+              overflow: 'hidden',
+              animation: 'modalSlideIn 0.3s ease-out',
+              marginTop: '20px'
+            }}
+          >
+            <UserProfile 
+              user={currentUser}
+              onLogout={handleLogout}
+              onClose={closeUserProfile}
+            />
+          </div>
+        </div>
+      )}
+
       {/* Login Modal */}
       {showLoginModal && (
-        <div className="modal fade show" style={{ display: 'block' }} tabIndex={-1}>
-          <div className="modal-dialog">
-            <form className="modal-content" onSubmit={handleLogin}>
-              <div className="modal-header">
-                <h5 className="modal-title">Login</h5>
-                <button type="button" className="btn-close" onClick={closeLoginModal}></button>
+        <div 
+          className="custom-modal-overlay" 
+          style={{
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            display: 'flex',
+            alignItems: 'flex-start',
+            justifyContent: 'center',
+            padding: '20px',
+            backgroundColor: 'rgba(0, 0, 0, 0.8)',
+            zIndex: 2000,
+            backdropFilter: 'blur(5px)'
+          }}
+          onClick={(e) => {
+            if (e.target === e.currentTarget) closeLoginModal();
+          }}
+        >
+          <div 
+            className="custom-modal-content"
+            style={{
+              background: 'linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%)',
+              borderRadius: '15px',
+              boxShadow: '0 20px 40px rgba(0, 0, 0, 0.5)',
+              maxWidth: '500px',
+              width: '100%',
+              maxHeight: '90vh',
+              overflow: 'hidden',
+              animation: 'modalSlideIn 0.3s ease-out',
+              marginTop: '20px'
+            }}
+          >
+            <form onSubmit={handleLogin} style={{ margin: 0 }}>
+              <div style={{
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+                padding: '20px 25px',
+                background: 'linear-gradient(90deg, #00a651 0%, #00d4aa 100%)',
+                color: 'white'
+              }}>
+                <h5 style={{ margin: 0, fontSize: '1.4rem', fontWeight: '600' }}>Login</h5>
+                <button 
+                  type="button" 
+                  onClick={closeLoginModal}
+                  style={{
+                    background: 'rgba(255, 255, 255, 0.2)',
+                    border: 'none',
+                    color: 'white',
+                    fontSize: '24px',
+                    width: '40px',
+                    height: '40px',
+                    borderRadius: '50%',
+                    cursor: 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    transition: 'all 0.2s ease'
+                  }}
+                >
+                  ×
+                </button>
               </div>
-              <div className="modal-body">
-                <input type="text" name="email" className="form-control mb-3" placeholder="Username or Email" value={loginData.email} onChange={handleLoginChange} />
-                <input type="password" name="password" className="form-control mb-3" placeholder="Password" value={loginData.password} onChange={handleLoginChange} />
+              <div style={{ padding: '25px' }}>
+                <input 
+                  type="text" 
+                  name="email" 
+                  className="form-control mb-3" 
+                  placeholder="Username or Email" 
+                  value={loginData.email} 
+                  onChange={handleLoginChange}
+                  style={{ backgroundColor: 'rgba(255, 255, 255, 0.1)', border: '1px solid rgba(255, 255, 255, 0.2)', color: 'white' }}
+                />
+                <input 
+                  type="password" 
+                  name="password" 
+                  className="form-control mb-3" 
+                  placeholder="Password" 
+                  value={loginData.password} 
+                  onChange={handleLoginChange}
+                  style={{ backgroundColor: 'rgba(255, 255, 255, 0.1)', border: '1px solid rgba(255, 255, 255, 0.2)', color: 'white' }}
+                />
                 {loginMessage && <p className="text-danger">{loginMessage}</p>}
               </div>
-              <div className="modal-footer">
-                <button type="submit" className="btn btn-primary">Login</button>
-                <button type="button" className="btn btn-secondary" onClick={closeLoginModal}>Close</button>
+              <div style={{
+                display: 'flex',
+                justifyContent: 'flex-end',
+                gap: '10px',
+                padding: '20px 25px',
+                borderTop: '1px solid rgba(255, 255, 255, 0.1)'
+              }}>
+                <button 
+                  type="submit" 
+                  style={{
+                    background: 'linear-gradient(135deg, #00a651 0%, #00d4aa 100%)',
+                    color: 'white',
+                    border: 'none',
+                    padding: '10px 20px',
+                    borderRadius: '8px',
+                    fontWeight: '600',
+                    cursor: 'pointer'
+                  }}
+                >
+                  Login
+                </button>
+                <button 
+                  type="button" 
+                  onClick={closeLoginModal}
+                  style={{
+                    background: 'rgba(255, 255, 255, 0.1)',
+                    color: 'white',
+                    border: '1px solid rgba(255, 255, 255, 0.2)',
+                    padding: '10px 20px',
+                    borderRadius: '8px',
+                    cursor: 'pointer'
+                  }}
+                >
+                  Close
+                </button>
               </div>
             </form>
           </div>
@@ -214,31 +429,140 @@ export default function Navbar({
 
       {/* Sign Up Modal */}
       {showSignupModal && (
-        <div className="modal fade show" style={{ display: 'block' }} tabIndex={-1}>
-          <div className="modal-dialog">
-            <form className="modal-content" onSubmit={handleSubmit}>
-              <div className="modal-header">
-                <h5 className="modal-title">Sign Up</h5>
-                <button type="button" className="btn-close" onClick={closeSignupModal}></button>
+        <div 
+          className="custom-modal-overlay" 
+          style={{
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            display: 'flex',
+            alignItems: 'flex-start',
+            justifyContent: 'center',
+            padding: '20px',
+            backgroundColor: 'rgba(0, 0, 0, 0.8)',
+            zIndex: 2000,
+            backdropFilter: 'blur(5px)'
+          }}
+          onClick={(e) => {
+            if (e.target === e.currentTarget) closeSignupModal();
+          }}
+        >
+          <div 
+            className="custom-modal-content"
+            style={{
+              background: 'linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%)',
+              borderRadius: '15px',
+              boxShadow: '0 20px 40px rgba(0, 0, 0, 0.5)',
+              maxWidth: '500px',
+              width: '100%',
+              maxHeight: '90vh',
+              overflow: 'hidden',
+              animation: 'modalSlideIn 0.3s ease-out',
+              marginTop: '20px'
+            }}
+          >
+            <form onSubmit={handleSubmit} style={{ margin: 0 }}>
+              <div style={{
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+                padding: '20px 25px',
+                background: 'linear-gradient(90deg, #00a651 0%, #00d4aa 100%)',
+                color: 'white'
+              }}>
+                <h5 style={{ margin: 0, fontSize: '1.4rem', fontWeight: '600' }}>Sign Up</h5>
+                <button 
+                  type="button" 
+                  onClick={closeSignupModal}
+                  style={{
+                    background: 'rgba(255, 255, 255, 0.2)',
+                    border: 'none',
+                    color: 'white',
+                    fontSize: '24px',
+                    width: '40px',
+                    height: '40px',
+                    borderRadius: '50%',
+                    cursor: 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    transition: 'all 0.2s ease'
+                  }}
+                >
+                  ×
+                </button>
               </div>
-              <div className="modal-body">
-                <input type="text" name="username" className="form-control mb-3" placeholder="Username" value={formData.username} onChange={handleChange} />
-                <input type="email" name="email" className="form-control mb-3" placeholder="Email" value={formData.email} onChange={handleChange} />
-                <input type="password" name="password" className="form-control mb-3" placeholder="Password" value={formData.password} onChange={handleChange} />
+              <div style={{ padding: '25px' }}>
+                <input 
+                  type="text" 
+                  name="username" 
+                  className="form-control mb-3" 
+                  placeholder="Username" 
+                  value={formData.username} 
+                  onChange={handleChange}
+                  style={{ backgroundColor: 'rgba(255, 255, 255, 0.1)', border: '1px solid rgba(255, 255, 255, 0.2)', color: 'white' }}
+                />
+                <input 
+                  type="email" 
+                  name="email" 
+                  className="form-control mb-3" 
+                  placeholder="Email" 
+                  value={formData.email} 
+                  onChange={handleChange}
+                  style={{ backgroundColor: 'rgba(255, 255, 255, 0.1)', border: '1px solid rgba(255, 255, 255, 0.2)', color: 'white' }}
+                />
+                <input 
+                  type="password" 
+                  name="password" 
+                  className="form-control mb-3" 
+                  placeholder="Password" 
+                  value={formData.password} 
+                  onChange={handleChange}
+                  style={{ backgroundColor: 'rgba(255, 255, 255, 0.1)', border: '1px solid rgba(255, 255, 255, 0.2)', color: 'white' }}
+                />
                 {message && <p className="text-success">{message}</p>}
               </div>
-              <div className="modal-footer">
-                <button type="submit" className="btn btn-success">Sign Up</button>
-                <button type="button" className="btn btn-secondary" onClick={closeSignupModal}>Close</button>
+              <div style={{
+                display: 'flex',
+                justifyContent: 'flex-end',
+                gap: '10px',
+                padding: '20px 25px',
+                borderTop: '1px solid rgba(255, 255, 255, 0.1)'
+              }}>
+                <button 
+                  type="submit" 
+                  style={{
+                    background: 'linear-gradient(135deg, #00a651 0%, #00d4aa 100%)',
+                    color: 'white',
+                    border: 'none',
+                    padding: '10px 20px',
+                    borderRadius: '8px',
+                    fontWeight: '600',
+                    cursor: 'pointer'
+                  }}
+                >
+                  Sign Up
+                </button>
+                <button 
+                  type="button" 
+                  onClick={closeSignupModal}
+                  style={{
+                    background: 'rgba(255, 255, 255, 0.1)',
+                    color: 'white',
+                    border: '1px solid rgba(255, 255, 255, 0.2)',
+                    padding: '10px 20px',
+                    borderRadius: '8px',
+                    cursor: 'pointer'
+                  }}
+                >
+                  Close
+                </button>
               </div>
             </form>
           </div>
         </div>
-      )}
-
-      {/* Modal Backdrop */}
-      {(showLoginModal || showSignupModal) && (
-        <div className="modal-backdrop fade show" onClick={showLoginModal ? closeLoginModal : closeSignupModal}></div>
       )}
     </>
   );
