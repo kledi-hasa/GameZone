@@ -1,29 +1,24 @@
 import React, { useEffect } from 'react';
 import styles from './ReviewModal.module.css';
-
-interface Review {
-  id: number;
-  author: string;
-  rating: number;
-  date: string;
-  comment: string;
-  helpful: number;
-  verified: boolean;
-}
+import { useGameContext } from '../context/GameContext';
 
 interface ReviewModalProps {
   isOpen: boolean;
   onClose: () => void;
   gameTitle: string;
   gameRating: number;
+  gameId: string;
 }
 
 const ReviewModal: React.FC<ReviewModalProps> = ({
   isOpen,
   onClose,
   gameTitle,
-  gameRating
+  gameRating,
+  gameId
 }) => {
+  const { comments, addComment } = useGameContext();
+
   // Manage scroll position when modal opens
   useEffect(() => {
     if (isOpen) {
@@ -42,81 +37,8 @@ const ReviewModal: React.FC<ReviewModalProps> = ({
     };
   }, [isOpen]);
 
-  // Sample reviews data
-  const [reviews, setReviews] = React.useState<Review[]>([
-    {
-      id: 1,
-      author: "GamingMaster2024",
-      rating: 5,
-      date: "2024-01-15",
-      comment: "Absolutely incredible game! The graphics are stunning and the gameplay is smooth. The story is engaging and the characters are well-developed. I've spent over 100 hours playing this and still discovering new things. Highly recommend to anyone who loves this genre. The attention to detail is phenomenal and the replay value is excellent.",
-      helpful: 24,
-      verified: true
-    },
-    {
-      id: 2,
-      author: "GameReviewer",
-      rating: 4,
-      date: "2024-01-10",
-      comment: "Great game with amazing mechanics. The story is engaging and the characters are well-developed. Minor bugs but nothing game-breaking. The combat system is fluid and the world design is beautiful. Some performance issues on older systems but overall a solid experience.",
-      helpful: 18,
-      verified: true
-    },
-    {
-      id: 3,
-      author: "PlayerOne",
-      rating: 5,
-      date: "2024-01-08",
-      comment: "One of the best games I've played this year. The attention to detail is phenomenal and the replay value is excellent. The soundtrack is amazing and the voice acting is top-notch. The open world is vast and full of secrets to discover.",
-      helpful: 31,
-      verified: false
-    },
-    {
-      id: 4,
-      author: "CasualGamer",
-      rating: 4,
-      date: "2024-01-05",
-      comment: "Really enjoyable experience. The controls are intuitive and the game runs smoothly on my system. Worth every penny! The difficulty curve is well-balanced and the tutorials are helpful for newcomers.",
-      helpful: 12,
-      verified: true
-    },
-    {
-      id: 5,
-      author: "ProGamer",
-      rating: 5,
-      date: "2024-01-03",
-      comment: "Exceptional quality and polish. The developers really put their heart into this one. Can't wait for the sequel! The multiplayer features are fantastic and the community is very active.",
-      helpful: 45,
-      verified: true
-    },
-    {
-      id: 6,
-      author: "RPG_Fanatic",
-      rating: 4,
-      date: "2023-12-28",
-      comment: "Solid RPG experience with deep customization options. The character progression system is well thought out and the side quests are actually interesting. Some loading times are a bit long but it's forgivable given the scope.",
-      helpful: 8,
-      verified: false
-    },
-    {
-      id: 7,
-      author: "TechGamer",
-      rating: 3,
-      date: "2023-12-20",
-      comment: "Good game overall but has some technical issues. Frame rate drops occasionally and there are some texture pop-in problems. The core gameplay is fun though and the story is decent.",
-      helpful: 15,
-      verified: true
-    },
-    {
-      id: 8,
-      author: "IndieLover",
-      rating: 5,
-      date: "2023-12-15",
-      comment: "This game exceeded all my expectations! The art style is unique and beautiful, the music is atmospheric, and the gameplay mechanics are innovative. It's clear the developers poured their passion into every aspect.",
-      helpful: 22,
-      verified: false
-    }
-  ]);
+  // Filter comments for this game
+  const reviews = comments.filter(comment => comment.gameId === gameId);
 
   // Render stars based on rating
   const renderStars = (rating: number) => {
@@ -135,7 +57,10 @@ const ReviewModal: React.FC<ReviewModalProps> = ({
   };
 
   // Calculate average rating
-  const averageRating = reviews.reduce((sum, review) => sum + review.rating, 0) / reviews.length;
+  const averageRating =
+    reviews.length > 0
+      ? reviews.reduce((sum, review) => sum + (review.rating ?? 0), 0) / reviews.length
+      : gameRating;
   const totalReviews = reviews.length;
 
   // Filter reviews by rating
@@ -162,29 +87,15 @@ const ReviewModal: React.FC<ReviewModalProps> = ({
       alert('Please enter your name');
       return;
     }
-    
-    // Create new review
-    const newReview: Review = {
-      id: Math.max(...reviews.map(r => r.id)) + 1,
-      author: userName.trim(),
-      rating: userRating,
-      date: new Date().toISOString().split('T')[0], // Today's date in YYYY-MM-DD format
-      comment: userComment.trim(),
-      helpful: 0,
-      verified: false
-    };
-    
-    // Add the new review to the beginning of the list
-    setReviews(prevReviews => [newReview, ...prevReviews]);
-    
-    // Show success message
-    alert('Thank you for your review! It has been added successfully.');
-    
-    // Reset form
-    setUserRating(0);
-    setUserComment('');
-    setUserName('');
-    setShowAddReview(false);
+    // Add review to context
+    addComment({
+      gameId,
+      username: userName.trim(),
+      content: userComment.trim(),
+      isInappropriate: false,
+      userId: '', // Optionally, set userId if you have user auth
+      rating: userRating
+    });
   };
 
   const handleStarClick = (rating: number) => {
@@ -220,7 +131,7 @@ const ReviewModal: React.FC<ReviewModalProps> = ({
             <div className={styles['rating-bars']}>
               {[5, 4, 3, 2, 1].map(rating => {
                 const count = reviews.filter(r => r.rating === rating).length;
-                const percentage = (count / totalReviews) * 100;
+                const percentage = totalReviews > 0 ? (count / totalReviews) * 100 : 0;
                 return (
                   <div key={rating} className={styles['rating-bar-item']}>
                     <span className={styles['rating-label']}>{rating} stars</span>
@@ -265,24 +176,18 @@ const ReviewModal: React.FC<ReviewModalProps> = ({
               <div className={styles['review-header']}>
                 <div className={styles['reviewer-info']}>
                   <div className={styles['reviewer-details']}>
-                    <span className={styles['reviewer-name']}>{review.author}</span>
-                    {review.verified && (
-                      <span className={styles['verified-badge']}>✓ Verified Purchase</span>
-                    )}
+                    <span className={styles['reviewer-name']}>{review.username}</span>
+                    {/* Optionally, add verified badge if you have purchase info */}
                   </div>
                   <div className={styles['review-rating']}>
-                    <div className={styles['review-stars']}>{renderStars(review.rating)}</div>
+                    <div className={styles['review-stars']}>{renderStars(review.rating ?? 0)}</div>
                     <span className={styles['review-date']}>{new Date(review.date).toLocaleDateString()}</span>
                   </div>
                 </div>
-                <div className={styles['review-helpful']}>
-                  <button className={styles['helpful-button']}>
-                    👍 Helpful ({review.helpful})
-                  </button>
-                </div>
+                {/* Helpful button can be implemented if needed */}
               </div>
               <div className={styles['review-content']}>
-                <p className={styles['review-comment']}>{review.comment}</p>
+                <p className={styles['review-comment']}>{review.content}</p>
               </div>
             </div>
           ))}

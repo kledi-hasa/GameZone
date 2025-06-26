@@ -1,46 +1,9 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useGameContext, type User, type Game } from '../context/GameContext';
 import styles from './AdminPage.module.css';
 
-interface User {
-  id: string;
-  username: string;
-  email: string;
-  password: string;
-  role?: string;
-}
-interface Game {
-  id: string;
-  title: string;
-  releaseDate: string;
-  rating: number;
-  description: string;
-  backgroundImage: string;
-  price: number;
-  trailerUrl?: string;
-}
-interface Review {
-  id: string;
-  gameId: string;
-  username: string;
-  content: string;
-  date: string;
-  rating: number;
-  helpful: number;
-  verified: boolean;
-}
-interface Purchase {
-  id: string;
-  userId: string;
-  gameId: string;
-  price: number;
-  purchaseDate: string;
-  paymentMethod: string;
-  transactionKey: string;
-}
-
-type Tab = 'overview' | 'users' | 'games' | 'purchases' | 'reviews';
-const API = 'http://localhost:3000';
+type Tab = 'overview' | 'users' | 'games' | 'comments' | 'purchases' | 'profit-report';
 
 // Modal Component
 function Modal({ title, onClose, children }: { title: string, onClose: () => void, children: React.ReactNode }) {
@@ -56,110 +19,216 @@ function Modal({ title, onClose, children }: { title: string, onClose: () => voi
 }
 
 // Memoized form components
-const UserForm = React.memo(({ form, onChange, onSubmit, type }: { 
+const UserForm = React.memo(({ form, onChange, onSubmit, type, onClose }: { 
   form: Omit<User, 'id'>, 
-  onChange: (field: keyof Omit<User, 'id'>, value: string) => void,
+  onChange: (field: keyof Omit<User, 'id'>, value: string | number) => void,
   onSubmit: (e: React.FormEvent) => void,
-  type: string 
+  type: string,
+  onClose: () => void
 }) => (
-  <Modal title={type === 'addUser' ? 'Add User' : 'Edit User'} onClose={() => {}}>
-    <form onSubmit={onSubmit}>
-      <input value={form.username} onChange={e => onChange('username', e.target.value)} placeholder="Username" required />
-      <input value={form.email} onChange={e => onChange('email', e.target.value)} placeholder="Email" required />
-      <input value={form.password} onChange={e => onChange('password', e.target.value)} placeholder="Password" required />
-      <input value={form.role || ''} onChange={e => onChange('role', e.target.value)} placeholder="Role (optional)" />
-      <button type="submit">Save</button>
+  <Modal title={type === 'addUser' ? 'Add User' : 'Edit User'} onClose={onClose}>
+    <form onSubmit={onSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+      <input 
+        value={form.username} 
+        onChange={e => onChange('username', e.target.value)} 
+        placeholder="Username" 
+        required 
+        style={{ padding: '8px', borderRadius: '4px', border: '1px solid #ccc' }}
+      />
+      <input 
+        value={form.email} 
+        onChange={e => onChange('email', e.target.value)} 
+        placeholder="Email" 
+        required 
+        style={{ padding: '8px', borderRadius: '4px', border: '1px solid #ccc' }}
+      />
+      <select 
+        value={form.role} 
+        onChange={e => onChange('role', e.target.value)} 
+        required
+        style={{ padding: '8px', borderRadius: '4px', border: '1px solid #ccc' }}
+      >
+        <option value="user">User</option>
+        <option value="moderator">Moderator</option>
+        <option value="admin">Admin</option>
+      </select>
+      <select 
+        value={form.status} 
+        onChange={e => onChange('status', e.target.value)} 
+        required
+        style={{ padding: '8px', borderRadius: '4px', border: '1px solid #ccc' }}
+      >
+        <option value="active">Active</option>
+        <option value="suspended">Suspended</option>
+        <option value="banned">Banned</option>
+      </select>
+      <input 
+        type="number"
+        value={form.totalPurchases || ''} 
+        onChange={e => onChange('totalPurchases', parseInt(e.target.value) || 0)} 
+        placeholder="Total Purchases" 
+        required 
+        style={{ padding: '8px', borderRadius: '4px', border: '1px solid #ccc' }}
+      />
+      <input 
+        type="number"
+        step="0.01"
+        value={form.totalSpent || ''} 
+        onChange={e => onChange('totalSpent', parseFloat(e.target.value) || 0)} 
+        placeholder="Total Spent" 
+        required 
+        style={{ padding: '8px', borderRadius: '4px', border: '1px solid #ccc' }}
+      />
+      <button type="submit" style={{ padding: '12px', backgroundColor: '#007bff', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer' }}>Save</button>
     </form>
   </Modal>
 ));
 
-const GameForm = React.memo(({ form, onChange, onSubmit, type }: { 
+const GameForm = React.memo(({ form, onChange, onSubmit, type, onClose }: { 
   form: Omit<Game, 'id'>, 
   onChange: (field: keyof Omit<Game, 'id'>, value: string | number) => void,
   onSubmit: (e: React.FormEvent) => void,
-  type: string 
-}) => (
-  <Modal title={type === 'addGame' ? 'Add Game' : 'Edit Game'} onClose={() => {}}>
-    <form onSubmit={onSubmit}>
-      <input value={form.title} onChange={e => onChange('title', e.target.value)} placeholder="Game Name" required />
-      <textarea value={form.description} onChange={e => onChange('description', e.target.value)} placeholder="Description" required />
-      <input value={form.backgroundImage} onChange={e => onChange('backgroundImage', e.target.value)} placeholder="Picture URL" required />
-      <input type="number" value={form.price} onChange={e => onChange('price', Number(e.target.value))} placeholder="Price" required min={0} step={0.01} />
-      <input value={form.trailerUrl || ''} onChange={e => onChange('trailerUrl', e.target.value)} placeholder="YouTube Trailer Link (optional)" />
-      <button type="submit">Save</button>
-    </form>
-  </Modal>
-));
-
-const ReviewForm = React.memo(({ form, onChange, onSubmit, type, games }: { 
-  form: Omit<Review, 'id'>, 
-  onChange: (field: keyof Omit<Review, 'id'>, value: string | number | boolean) => void,
-  onSubmit: (e: React.FormEvent) => void,
   type: string,
-  games: Game[]
+  onClose: () => void
 }) => (
-  <Modal title={type === 'addReview' ? 'Add Review' : 'Edit Review'} onClose={() => {}}>
-    <form onSubmit={onSubmit}>
-      <select value={form.gameId} onChange={e => onChange('gameId', e.target.value)} required>
-        <option value="">Select Game</option>
-        {games.map(g => <option key={g.id} value={g.id}>{g.title}</option>)}
-      </select>
-      <input value={form.username} onChange={e => onChange('username', e.target.value)} placeholder="Username" required />
-      <textarea value={form.content} onChange={e => onChange('content', e.target.value)} placeholder="Review" required />
-      <input type="date" value={form.date} onChange={e => onChange('date', e.target.value)} required />
-      <input type="number" value={form.rating} onChange={e => onChange('rating', Number(e.target.value))} min={1} max={5} required />
-      <input type="number" value={form.helpful} onChange={e => onChange('helpful', Number(e.target.value))} min={0} placeholder="Helpful count" />
-      <label><input type="checkbox" checked={form.verified} onChange={e => onChange('verified', e.target.checked)} /> Verified</label>
-      <button type="submit">Save</button>
-    </form>
-  </Modal>
-));
-
-const PurchaseForm = React.memo(({ form, onChange, onSubmit, users, games }: { 
-  form: Omit<Purchase, 'id'>, 
-  onChange: (field: keyof Omit<Purchase, 'id'>, value: string | number) => void,
-  onSubmit: (e: React.FormEvent) => void,
-  users: User[],
-  games: Game[]
-}) => (
-  <Modal title="Add Purchase" onClose={() => {}}>
-    <form onSubmit={onSubmit}>
-      <select value={form.userId} onChange={e => onChange('userId', e.target.value)} required>
-        <option value="">Select User</option>
-        {users.map(u => <option key={u.id} value={u.id}>{u.username}</option>)}
-      </select>
-      <select value={form.gameId} onChange={e => onChange('gameId', e.target.value)} required>
-        <option value="">Select Game</option>
-        {games.map(g => <option key={g.id} value={g.id}>{g.title}</option>)}
-      </select>
-      <input type="number" value={form.price} onChange={e => onChange('price', Number(e.target.value))} placeholder="Price" required />
-      <input type="date" value={form.purchaseDate} onChange={e => onChange('purchaseDate', e.target.value)} required />
-      <input value={form.paymentMethod} onChange={e => onChange('paymentMethod', e.target.value)} placeholder="Payment Method" required />
-      <input value={form.transactionKey} onChange={e => onChange('transactionKey', e.target.value)} placeholder="Transaction Key" required />
-      <button type="submit">Save</button>
+  <Modal title={type === 'addGame' ? 'Add Game' : 'Edit Game'} onClose={onClose}>
+    <form onSubmit={onSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+      <input 
+        value={form.title} 
+        onChange={e => onChange('title', e.target.value)} 
+        placeholder="Game Name" 
+        required 
+        style={{ padding: '8px', borderRadius: '4px', border: '1px solid #ccc' }}
+      />
+      <textarea 
+        value={form.description} 
+        onChange={e => onChange('description', e.target.value)} 
+        placeholder="Description" 
+        required 
+        style={{ padding: '8px', borderRadius: '4px', border: '1px solid #ccc', minHeight: '100px' }}
+      />
+      <input 
+        value={form.backgroundImage} 
+        onChange={e => onChange('backgroundImage', e.target.value)} 
+        placeholder="Picture URL" 
+        required 
+        style={{ padding: '8px', borderRadius: '4px', border: '1px solid #ccc' }}
+      />
+      <input 
+        type="number" 
+        value={form.price} 
+        onChange={e => onChange('price', Number(e.target.value))} 
+        placeholder="Selling Price" 
+        required 
+        min={0} 
+        step={0.01} 
+        style={{ padding: '8px', borderRadius: '4px', border: '1px solid #ccc' }}
+      />
+      <input 
+        type="number" 
+        value={form.cost || ''} 
+        onChange={e => onChange('cost', Number(e.target.value))} 
+        placeholder="Purchase Cost per Unit" 
+        required 
+        min={0} 
+        step={0.01} 
+        style={{ padding: '8px', borderRadius: '4px', border: '1px solid #ccc' }}
+      />
+      <input 
+        type="number" 
+        value={form.quantity || ''} 
+        onChange={e => onChange('quantity', Number(e.target.value))} 
+        placeholder="Quantity Purchased" 
+        required 
+        min={1} 
+        step={1} 
+        style={{ padding: '8px', borderRadius: '4px', border: '1px solid #ccc' }}
+      />
+      <input 
+        value={form.trailerUrl || ''} 
+        onChange={e => onChange('trailerUrl', e.target.value)} 
+        placeholder="YouTube Trailer Link (optional)" 
+        style={{ padding: '8px', borderRadius: '4px', border: '1px solid #ccc' }}
+      />
+      <input 
+        value={form.releaseDate} 
+        onChange={e => onChange('releaseDate', e.target.value)} 
+        placeholder="Release Date" 
+        required 
+        style={{ padding: '8px', borderRadius: '4px', border: '1px solid #ccc' }}
+      />
+      <input 
+        type="number"
+        min="1"
+        max="10"
+        value={form.rating} 
+        onChange={e => onChange('rating', Number(e.target.value))} 
+        placeholder="Rating (1-10)" 
+        required 
+        style={{ padding: '8px', borderRadius: '4px', border: '1px solid #ccc' }}
+      />
+      <button type="submit" style={{ padding: '12px', backgroundColor: '#007bff', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer' }}>Save</button>
     </form>
   </Modal>
 ));
 
 const AdminPage: React.FC<{ onLogout: () => void }> = ({ onLogout }) => {
   const navigate = useNavigate();
+  const { 
+    games, 
+    addGame, 
+    editGame, 
+    deleteGame,
+    comments,
+    deleteComment,
+    flagComment,
+    users,
+    addUser,
+    updateUser,
+    deleteUser,
+    banUser,
+    activateUser,
+    purchases,
+    getStatistics,
+    getProfitReport
+  } = useGameContext();
+
+  // Debug logging
+  console.log('AdminPage rendered with data:', {
+    games: games.length,
+    comments: comments.length,
+    users: users.length,
+    purchases: purchases.length
+  });
+
   const [activeTab, setActiveTab] = useState<Tab>('overview');
-  const [users, setUsers] = useState<User[]>([]);
-  const [games, setGames] = useState<Game[]>([]);
-  const [reviews, setReviews] = useState<Review[]>([]);
-  const [purchases, setPurchases] = useState<Purchase[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [modal, setModal] = useState<{type: string, data?: any} | null>(null);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [userSearchQuery, setUserSearchQuery] = useState('');
   
   // Form states
-  const [userForm, setUserForm] = useState<Omit<User, 'id'>>({ username: '', email: '', password: '', role: '' });
-  const [gameForm, setGameForm] = useState<Omit<Game, 'id'>>({ title: '', releaseDate: '', rating: 5, description: '', backgroundImage: '', price: 0, trailerUrl: '' });
-  const [reviewForm, setReviewForm] = useState<Omit<Review, 'id'>>({ gameId: '', username: '', content: '', date: '', rating: 5, helpful: 0, verified: false });
-  const [purchaseForm, setPurchaseForm] = useState<Omit<Purchase, 'id'>>({ userId: '', gameId: '', price: 0, purchaseDate: '', paymentMethod: '', transactionKey: '' });
+  const [userForm, setUserForm] = useState<Omit<User, 'id'>>({ 
+    username: '', 
+    email: '', 
+    role: 'user', 
+    status: 'active'
+  });
+  const [gameForm, setGameForm] = useState<Omit<Game, 'id'>>({ 
+    title: '', 
+    releaseDate: '', 
+    rating: 5, 
+    description: '', 
+    price: 0,
+    cost: 0,
+    quantity: 1,
+    backgroundImage: '', 
+    trailerUrl: ''
+  });
 
   // Optimized form handlers
-  const handleUserFormChange = useCallback((field: keyof Omit<User, 'id'>, value: string) => {
+  const handleUserFormChange = useCallback((field: keyof Omit<User, 'id'>, value: string | number) => {
     setUserForm(prev => ({ ...prev, [field]: value }));
   }, []);
 
@@ -167,256 +236,139 @@ const AdminPage: React.FC<{ onLogout: () => void }> = ({ onLogout }) => {
     setGameForm(prev => ({ ...prev, [field]: value }));
   }, []);
 
-  const handleReviewFormChange = useCallback((field: keyof Omit<Review, 'id'>, value: string | number | boolean) => {
-    setReviewForm(prev => ({ ...prev, [field]: value }));
-  }, []);
-
-  const handlePurchaseFormChange = useCallback((field: keyof Omit<Purchase, 'id'>, value: string | number) => {
-    setPurchaseForm(prev => ({ ...prev, [field]: value }));
-  }, []);
-
   // Reset forms when modal opens
   useEffect(() => {
     if (modal) {
       if (modal.type === 'addUser' || modal.type === 'editUser') {
-        setUserForm(modal.data || { username: '', email: '', password: '', role: '' });
+        setUserForm(modal.data || { username: '', email: '', role: 'user', status: 'active' });
       } else if (modal.type === 'addGame' || modal.type === 'editGame') {
-        setGameForm(modal.data || { title: '', releaseDate: '', rating: 5, description: '', backgroundImage: '', price: 0, trailerUrl: '' });
-      } else if (modal.type === 'addReview' || modal.type === 'editReview') {
-        setReviewForm(modal.data || { gameId: '', username: '', content: '', date: '', rating: 5, helpful: 0, verified: false });
-      } else if (modal.type === 'addPurchase') {
-        setPurchaseForm(modal.data || { userId: '', gameId: '', price: 0, purchaseDate: '', paymentMethod: '', transactionKey: '' });
+        setGameForm(modal.data || { title: '', releaseDate: '', rating: 5, description: '', backgroundImage: '', price: 0, cost: 0, quantity: 1, trailerUrl: '' });
       }
     }
   }, [modal]);
 
-  // Fetch all data
-  const fetchAll = async () => {
+  // CRUD Operations
+  const handleAddUser = async (user: Omit<User, 'id'>) => {
     setLoading(true);
-    setError('');
     try {
-      console.log('Fetching data from API...');
-      const [usersRes, gamesRes, reviewsRes, purchasesRes] = await Promise.all([
-        fetch(`${API}/users`),
-        fetch(`${API}/games`),
-        fetch(`${API}/reviews`),
-        fetch(`${API}/purchases`)
-      ]);
-      
-      console.log('API responses:', {
-        users: usersRes.status,
-        games: gamesRes.status,
-        reviews: reviewsRes.status,
-        purchases: purchasesRes.status
-      });
-      
-      if (!usersRes.ok || !gamesRes.ok || !reviewsRes.ok || !purchasesRes.ok) {
-        console.error('One or more API calls failed:', {
-          users: usersRes.status,
-          games: gamesRes.status,
-          reviews: reviewsRes.status,
-          purchases: purchasesRes.status
-        });
-        throw new Error('Failed to fetch data');
-      }
-      
-      const usersData = await usersRes.json();
-      const gamesData = await gamesRes.json();
-      const reviewsData = await reviewsRes.json();
-      const purchasesData = await purchasesRes.json();
-      
-      console.log('Fetched data:', {
-        users: usersData.length,
-        games: gamesData.length,
-        reviews: reviewsData.length,
-        purchases: purchasesData.length
-      });
-      
-      console.log('Purchases data:', purchasesData);
-      
-      setUsers(usersData);
-      setGames(gamesData);
-      setReviews(reviewsData);
-      setPurchases(purchasesData);
-    } catch (err) {
-      console.error('Fetch error:', err);
-      setError('Could not load data.');
+      addUser(user);
+      setModal(null);
+      setError('');
+    } catch (err) { 
+      setError('Failed to add user.'); 
     }
     setLoading(false);
   };
 
-  useEffect(() => { fetchAll(); }, []);
+  const handleEditUser = async (user: User) => {
+    setLoading(true);
+    try {
+      updateUser(user);
+      setModal(null);
+      setError('');
+    } catch (err) { 
+      setError('Failed to edit user.'); 
+    }
+    setLoading(false);
+  };
 
-  // --- CRUD Helpers ---
-  // Users
-  const addUser = async (user: Omit<User, 'id'>) => {
-    setLoading(true);
-    try {
-      await fetch(`${API}/users`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(user)
-      });
-      await fetchAll();
-      setModal(null);
-    } catch (err) { setError('Failed to add user.'); }
-    setLoading(false);
-  };
-  const editUser = async (user: User) => {
-    setLoading(true);
-    try {
-      await fetch(`${API}/users/${user.id}`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(user)
-      });
-      await fetchAll();
-      setModal(null);
-    } catch (err) { setError('Failed to edit user.'); }
-    setLoading(false);
-  };
-  const deleteUser = async (id: string) => {
+  const handleDeleteUser = async (id: string) => {
     if (!window.confirm('Delete this user?')) return;
     setLoading(true);
     try {
-      await fetch(`${API}/users/${id}`, { method: 'DELETE' });
-      await fetchAll();
-    } catch (err) { setError('Failed to delete user.'); }
-    setLoading(false);
-  };
-  // Games
-  const addGame = async (game: Omit<Game, 'id'>) => {
-    setLoading(true);
-    try {
-      await fetch(`${API}/games`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(game)
-      });
-      await fetchAll();
-      setModal(null);
-    } catch (err) { setError('Failed to add game.'); }
-    setLoading(false);
-  };
-  const editGame = async (game: Game) => {
-    setLoading(true);
-    try {
-      await fetch(`${API}/games/${game.id}`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(game)
-      });
-      await fetchAll();
-      setModal(null);
-    } catch (err) { setError('Failed to edit game.'); }
-    setLoading(false);
-  };
-  const deleteGame = async (id: string) => {
-    if (!window.confirm('Delete this game?')) return;
-    setLoading(true);
-    try {
-      await fetch(`${API}/games/${id}`, { method: 'DELETE' });
-      await fetchAll();
-    } catch (err) { setError('Failed to delete game.'); }
-    setLoading(false);
-  };
-  // Reviews
-  const addReview = async (review: Omit<Review, 'id'>) => {
-    setLoading(true);
-    try {
-      await fetch(`${API}/reviews`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(review)
-      });
-      await fetchAll();
-      setModal(null);
-    } catch (err) { setError('Failed to add review.'); }
-    setLoading(false);
-  };
-  const editReview = async (review: Review) => {
-    setLoading(true);
-    try {
-      await fetch(`${API}/reviews/${review.id}`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(review)
-      });
-      await fetchAll();
-      setModal(null);
-    } catch (err) { setError('Failed to edit review.'); }
-    setLoading(false);
-  };
-  const deleteReview = async (id: string) => {
-    if (!window.confirm('Delete this review?')) return;
-    setLoading(true);
-    try {
-      await fetch(`${API}/reviews/${id}`, { method: 'DELETE' });
-      await fetchAll();
-    } catch (err) { setError('Failed to delete review.'); }
-    setLoading(false);
-  };
-  // Purchases
-  const addPurchase = async (purchase: Omit<Purchase, 'id'>) => {
-    setLoading(true);
-    try {
-      await fetch(`${API}/purchases`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(purchase)
-      });
-      await fetchAll();
-      setModal(null);
-    } catch (err) { setError('Failed to add purchase.'); }
-    setLoading(false);
-  };
-  const deletePurchase = async (id: string) => {
-    if (!window.confirm('Delete this purchase?')) return;
-    setLoading(true);
-    try {
-      console.log('=== DELETE PURCHASE DEBUG ===');
-      console.log('Deleting purchase with ID:', id);
-      console.log('Current purchases before delete:', purchases);
-      console.log('Purchase to delete:', purchases.find(p => p.id === id));
-      
-      // Try the standard DELETE method first
-      const response = await fetch(`${API}/purchases/${id}`, { 
-        method: 'DELETE',
-        headers: {
-          'Content-Type': 'application/json',
-        }
-      });
-      
-      console.log('Delete response status:', response.status);
-      console.log('Delete response headers:', response.headers);
-      
-      if (!response.ok) {
-        throw new Error(`Failed to delete purchase: ${response.status}`);
-      }
-      
-      // Check if the delete was successful by fetching purchases again
-      const checkResponse = await fetch(`${API}/purchases`);
-      const remainingPurchases = await checkResponse.json();
-      console.log('Remaining purchases after delete:', remainingPurchases);
-      console.log('=== END DELETE DEBUG ===');
-      
-      await fetchAll();
+      deleteUser(id);
+      setError('');
     } catch (err) { 
-      console.error('Delete purchase error:', err);
-      setError('Failed to delete purchase.'); 
+      setError('Failed to delete user.'); 
     }
     setLoading(false);
   };
 
-  // --- Stats ---
-  const totalUsers = users.length;
-  const totalGames = games.length;
-  const totalPurchases = purchases.length;
-  const totalRevenue = purchases.reduce((sum, p) => sum + p.price, 0);
-  const totalReviews = reviews.length;
-  const averageRating = reviews.length ? (reviews.reduce((sum, r) => sum + r.rating, 0) / reviews.length) : 0;
+  const handleAddGame = async (game: Omit<Game, 'id'>) => {
+    setLoading(true);
+    try {
+      addGame(game);
+      setModal(null);
+      setError('');
+    } catch (err) { 
+      setError('Failed to add game.'); 
+    }
+    setLoading(false);
+  };
 
-  // --- Render ---
+  const handleEditGame = async (game: Game) => {
+    setLoading(true);
+    try {
+      editGame(game);
+      setModal(null);
+      setError('');
+    } catch (err) { 
+      setError('Failed to edit game.'); 
+    }
+    setLoading(false);
+  };
+
+  const handleDeleteGame = async (id: string) => {
+    if (!window.confirm('Delete this game?')) return;
+    setLoading(true);
+    try {
+      deleteGame(id);
+      setError('');
+    } catch (err) { 
+      setError('Failed to delete game.'); 
+    }
+    setLoading(false);
+  };
+
+  const handleDeleteComment = async (id: string) => {
+    if (!window.confirm('Delete this comment?')) return;
+    setLoading(true);
+    try {
+      deleteComment(id);
+      setError('');
+    } catch (err) { 
+      setError('Failed to delete comment.'); 
+    }
+    setLoading(false);
+  };
+
+  const handleFlagComment = async (id: string) => {
+    setLoading(true);
+    try {
+      flagComment(id);
+      setError('');
+    } catch (err) { 
+      setError('Failed to flag comment.'); 
+    }
+    setLoading(false);
+  };
+
+  // Get statistics
+  const stats = getStatistics();
+
+  // Helper functions
+  const getGameTitle = (id: string) => games.find(g => g.id === id)?.title || id;
+  const getUserName = (id: string) => users.find(u => u.id === id)?.username || id;
+
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case 'active': return '#00a651';
+      case 'suspended': return '#f39c12';
+      case 'banned': return '#e74c3c';
+      default: return '#95a5a6';
+    }
+  };
+
+  const getRoleColor = (role: string) => {
+    switch (role) {
+      case 'admin': return '#e74c3c';
+      case 'moderator': return '#f39c12';
+      case 'user': return '#3498db';
+      default: return '#95a5a6';
+    }
+  };
+
+  // Render modal
   const renderModal = useMemo(() => {
     if (!modal) return null;
     const { type } = modal;
@@ -426,8 +378,12 @@ const AdminPage: React.FC<{ onLogout: () => void }> = ({ onLogout }) => {
         <UserForm
           form={userForm}
           onChange={handleUserFormChange}
-          onSubmit={(e) => { e.preventDefault(); type === 'addUser' ? addUser(userForm) : editUser(userForm as User); }}
+          onSubmit={(e) => { 
+            e.preventDefault(); 
+            type === 'addUser' ? handleAddUser(userForm) : handleEditUser(userForm as User); 
+          }}
           type={type}
+          onClose={() => setModal(null)}
         />
       );
     }
@@ -437,42 +393,18 @@ const AdminPage: React.FC<{ onLogout: () => void }> = ({ onLogout }) => {
         <GameForm
           form={gameForm}
           onChange={handleGameFormChange}
-          onSubmit={(e) => { e.preventDefault(); type === 'addGame' ? addGame(gameForm) : editGame(gameForm as Game); }}
+          onSubmit={(e) => { 
+            e.preventDefault(); 
+            type === 'addGame' ? handleAddGame(gameForm) : handleEditGame(gameForm as Game); 
+          }}
           type={type}
-        />
-      );
-    }
-    
-    if (type === 'addReview' || type === 'editReview') {
-      return (
-        <ReviewForm
-          form={reviewForm}
-          onChange={handleReviewFormChange}
-          onSubmit={(e) => { e.preventDefault(); type === 'addReview' ? addReview(reviewForm) : editReview(reviewForm as Review); }}
-          type={type}
-          games={games}
-        />
-      );
-    }
-    
-    if (type === 'addPurchase') {
-      return (
-        <PurchaseForm
-          form={purchaseForm}
-          onChange={handlePurchaseFormChange}
-          onSubmit={(e) => { e.preventDefault(); addPurchase(purchaseForm); }}
-          users={users}
-          games={games}
+          onClose={() => setModal(null)}
         />
       );
     }
     
     return null;
-  }, [modal, userForm, gameForm, reviewForm, purchaseForm, users, games, handleUserFormChange, handleGameFormChange, handleReviewFormChange, handlePurchaseFormChange]);
-
-  // --- Render Table Rows ---
-  const getGameTitle = (id: string) => games.find(g => g.id === id)?.title || id;
-  const getUserName = (id: string) => users.find(u => u.id === id)?.username || id;
+  }, [modal, userForm, gameForm, handleUserFormChange, handleGameFormChange]);
 
   return (
     <div className={styles['admin-page']}>
@@ -489,7 +421,7 @@ const AdminPage: React.FC<{ onLogout: () => void }> = ({ onLogout }) => {
         </div>
       </div>
       <div className={styles['admin-tabs']}>
-        {(['overview', 'users', 'games', 'purchases', 'reviews'] as Tab[]).map(tab => (
+        {(['overview', 'users', 'games', 'comments', 'purchases', 'profit-report'] as Tab[]).map(tab => (
           <button key={tab} className={`${styles['admin-tab']} ${activeTab === tab ? styles.active : ''}`} onClick={() => setActiveTab(tab)}>{tab.charAt(0).toUpperCase() + tab.slice(1)}</button>
         ))}
       </div>
@@ -499,31 +431,124 @@ const AdminPage: React.FC<{ onLogout: () => void }> = ({ onLogout }) => {
             {activeTab === 'overview' && (
               <div className={styles['overview-section']}>
                 <div className={styles['stats-grid']}>
-                  <div className={styles['stat-card']}><h3>Total Users</h3><div className={styles['stat-number']}>{totalUsers}</div></div>
-                  <div className={styles['stat-card']}><h3>Total Games</h3><div className={styles['stat-number']}>{totalGames}</div></div>
-                  <div className={styles['stat-card']}><h3>Total Purchases</h3><div className={styles['stat-number']}>{totalPurchases}</div></div>
-                  <div className={styles['stat-card']}><h3>Total Revenue</h3><div className={styles['stat-number']}>${totalRevenue.toFixed(2)}</div></div>
-                  <div className={styles['stat-card']}><h3>Total Reviews</h3><div className={styles['stat-number']}>{totalReviews}</div></div>
-                  <div className={styles['stat-card']}><h3>Average Rating</h3><div className={styles['stat-number']}>{averageRating.toFixed(1)}</div></div>
+                  <div className={styles['stat-card']}><h3>Total Users</h3><div className={styles['stat-number']}>{stats.totalUsers}</div></div>
+                  <div className={styles['stat-card']}><h3>Total Games</h3><div className={styles['stat-number']}>{stats.totalGames}</div></div>
+                  <div className={styles['stat-card']}><h3>Total Comments</h3><div className={styles['stat-number']}>{stats.totalComments}</div></div>
+                  <div className={styles['stat-card']}><h3>Total Purchases</h3><div className={styles['stat-number']}>{stats.totalPurchases}</div></div>
+                </div>
+                
+                <div className={styles['user-activity-stats']}>
+                  <h3>User Activity</h3>
+                  <div className={styles['activity-grid']}>
+                    <div className={styles['activity-card']} style={{ backgroundColor: '#00a651' }}>
+                      <h4>Active Users</h4>
+                      <p>{stats.userActivity.active}</p>
+                    </div>
+                    <div className={styles['activity-card']} style={{ backgroundColor: '#f39c12' }}>
+                      <h4>Suspended Users</h4>
+                      <p>{stats.userActivity.suspended}</p>
+                    </div>
+                    <div className={styles['activity-card']} style={{ backgroundColor: '#e74c3c' }}>
+                      <h4>Banned Users</h4>
+                      <p>{stats.userActivity.banned}</p>
+                    </div>
+                  </div>
+                </div>
+
+                <div className={styles['popular-games']}>
+                  <h3>Popular Games</h3>
+                  <div className={styles['popular-games-grid']}>
+                    {stats.popularGames.map(game => (
+                      <div key={game.id} className={styles['popular-game-card']}>
+                        <img src={game.backgroundImage} alt={game.title} />
+                        <h4>{game.title}</h4>
+                        <p>${game.price}</p>
+                        <div className={styles['game-stats']}>
+                          <span>👀 {game.views || 0}</span>
+                          <span>🛒 {game.purchases || 0}</span>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
                 </div>
               </div>
             )}
             {activeTab === 'users' && (
               <div className={styles['users-section']}>
-                <h3>Users</h3>
+                <h3 style={{display: 'flex', alignItems: 'center', justifyContent: 'center'}}>
+                  <span>Users</span>
+                </h3>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '20px', marginBottom: '24px' }}>
+                  <div className={styles['search-bar']} style={{ flex: 1 }}>
+                    <input
+                      type="text"
+                      placeholder="Search users by username or email..."
+                      value={userSearchQuery || ''}
+                      onChange={e => setUserSearchQuery(e.target.value)}
+                    />
+                  </div>
+                  <button 
+                    className={styles['add-btn']}
+                    onClick={() => setModal({ type: 'addUser' })}
+                  >
+                    <span style={{fontSize: '22px'}}>➕</span> Add New User
+                  </button>
+                </div>
                 <div className={styles['table-container']}>
                   <table className={styles['admin-table']}>
-                    <thead><tr><th>ID</th><th>Username</th><th>Email</th><th>Role</th><th>Actions</th></tr></thead>
+                    <thead>
+                      <tr>
+                        <th>Username</th>
+                        <th>Email</th>
+                        <th>Role</th>
+                        <th>Status</th>
+                        <th>Join Date</th>
+                        <th>Purchases</th>
+                        <th>Total Spent</th>
+                        <th>Actions</th>
+                      </tr>
+                    </thead>
                     <tbody>
-                      {users.map(user => (
+                      {(userSearchQuery
+                        ? users.filter(user =>
+                            user.username.toLowerCase().includes(userSearchQuery.toLowerCase()) ||
+                            user.email.toLowerCase().includes(userSearchQuery.toLowerCase())
+                          )
+                        : users
+                      ).map(user => (
                         <tr key={user.id}>
-                          <td>{user.id}</td>
                           <td>{user.username}</td>
                           <td>{user.email}</td>
-                          <td>{user.role || 'user'}</td>
+                          <td>
+                            <span 
+                              className={styles['role-badge']}
+                              style={{ backgroundColor: getRoleColor(user.role) }}
+                            >
+                              {user.role}
+                            </span>
+                          </td>
+                          <td>
+                            <span 
+                              className={styles['status-badge']}
+                              style={{ backgroundColor: getStatusColor(user.status) }}
+                            >
+                              {user.status}
+                            </span>
+                          </td>
+                          <td>{user.joinDate || '-'}</td>
+                          <td>{user.totalPurchases ?? 0}</td>
+                          <td>${(user.totalSpent ?? 0).toFixed(2)}</td>
                           <td>
                             <button onClick={() => setModal({ type: 'editUser', data: user })}>Edit</button>
-                            <button onClick={() => deleteUser(user.id)}>Delete</button>
+                            {user.status === 'active' && (
+                              <>
+                                <button onClick={() => banUser(user.id)}>Ban</button>
+                              </>
+                            )}
+                            {(user.status === 'suspended' || user.status === 'banned') && (
+                              <button onClick={() => activateUser(user.id)}>Activate</button>
+                            )}
+                            <button onClick={() => handleDeleteUser(user.id)}>Delete</button>
                           </td>
                         </tr>
                       ))}
@@ -534,33 +559,123 @@ const AdminPage: React.FC<{ onLogout: () => void }> = ({ onLogout }) => {
             )}
             {activeTab === 'games' && (
               <div className={styles['games-section']}>
-                <h3>Games <button onClick={() => setModal({ type: 'addGame' })}>+ Add Game</button></h3>
-                {error && (
-                  <div style={{ color: 'red', marginBottom: 16 }}>
-                    Failed to load games: {error}
+                <h3 style={{display: 'flex', alignItems: 'center', justifyContent: 'center'}}>
+                  <span>Games</span>
+                </h3>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '20px', marginBottom: '24px' }}>
+                  <div className={styles['search-bar']} style={{ flex: 1 }}>
+                    <input
+                      type="text"
+                      placeholder="Search games by title or description..."
+                      value={searchQuery}
+                      onChange={(e) => setSearchQuery(e.target.value)}
+                    />
+                    {searchQuery && (
+                      <div className={styles['search-results-count']}>
+                        {games.filter(game => 
+                          game.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                          game.description.toLowerCase().includes(searchQuery.toLowerCase())
+                        ).length} results
+                      </div>
+                    )}
                   </div>
-                )}
+                  <button 
+                    className={`${styles['add-btn']} ${styles['add-btn--game']}`}
+                    onClick={() => setModal({ type: 'addGame' })}
+                  >
+                    <span style={{fontSize: '23px'}}>🎮</span> Add New Game
+                  </button>
+                </div>
                 <div className={styles['table-container']}>
                   <table className={styles['admin-table']}>
-                    <thead><tr><th>ID</th><th>Title</th><th>Release Date</th><th>Rating</th><th>Price</th><th>Actions</th></tr></thead>
+                    <thead>
+                      <tr>
+                        <th>Image</th>
+                        <th>Title</th>
+                        <th>Release Date</th>
+                        <th>Rating</th>
+                        <th>Price</th>
+                        <th>Views</th>
+                        <th>Purchases</th>
+                        <th>Actions</th>
+                      </tr>
+                    </thead>
                     <tbody>
-                      {games.length === 0 && !loading && !error ? (
-                        <tr><td colSpan={6} style={{ textAlign: 'center' }}>No games found.</td></tr>
-                      ) : (
-                        games.map(game => (
-                          <tr key={game.id}>
-                            <td>{game.id}</td>
-                            <td>{game.title}</td>
-                            <td>{game.releaseDate}</td>
-                            <td>{game.rating}</td>
-                            <td>${game.price}</td>
+                      {games
+                        .filter(game => 
+                          game.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                          game.description.toLowerCase().includes(searchQuery.toLowerCase())
+                        )
+                        .map(game => {
+                          // Calculate real stats for this game
+                          const gamePurchases = purchases.filter(p => p.gameId === game.id);
+                          const gameComments = comments.filter(c => c.gameId === game.id);
+                          const realViews = gameComments.length + (gamePurchases.length * 3);
+                          const realPurchases = gamePurchases.length;
+                          
+                          return (
+                            <tr key={game.id}>
+                              <td>
+                                <img src={game.backgroundImage} alt={game.title} style={{ width: '50px', height: '50px', objectFit: 'cover', borderRadius: '4px' }} />
+                              </td>
+                              <td>{game.title}</td>
+                              <td>{game.releaseDate}</td>
+                              <td>{game.rating}/10</td>
+                              <td>${game.price}</td>
+                              <td>{realViews}</td>
+                              <td>{realPurchases}</td>
+                              <td>
+                                <button onClick={() => setModal({ type: 'editGame', data: game })}>Edit</button>
+                                <button onClick={() => handleDeleteGame(game.id)}>Delete</button>
+                              </td>
+                            </tr>
+                          );
+                        })}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            )}
+            {activeTab === 'comments' && (
+              <div className={styles['comments-section']}>
+                <h3 style={{display: 'flex', alignItems: 'center', justifyContent: 'center'}}>
+                  <span>Comment Moderation</span>
+                </h3>
+                <div className={styles['table-container']}>
+                  <table className={styles['admin-table']}>
+                    <thead>
+                      <tr>
+                        <th>Game</th>
+                        <th>Username</th>
+                        <th>Comment</th>
+                        <th>Date</th>
+                        <th>Status</th>
+                        <th>Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {comments.map(comment => {
+                        const game = games.find(g => g.id === comment.gameId);
+                        return (
+                          <tr key={comment.id} className={comment.isInappropriate ? styles['inappropriate'] : ''}>
+                            <td>{game?.title || 'Unknown Game'}</td>
+                            <td>{comment.username}</td>
+                            <td className={styles['comment-content']}>{comment.content}</td>
+                            <td>{comment.date}</td>
                             <td>
-                              <button onClick={() => setModal({ type: 'editGame', data: game })}>Edit</button>
-                              <button onClick={() => deleteGame(game.id)}>Delete</button>
+                              <span className={`${styles['status']} ${comment.isInappropriate ? styles['flagged'] : styles['clean']}`}>
+                                {comment.isInappropriate ? '🚩 Flagged' : '✅ Clean'}
+                              </span>
+                            </td>
+                            <td>
+                              <button onClick={() => handleFlagComment(comment.id)}>
+                                {comment.isInappropriate ? '✅ Unflag' : '🚩 Flag'}
+                              </button>
+                              <button onClick={() => handleDeleteComment(comment.id)}>Delete</button>
                             </td>
                           </tr>
-                        ))
-                      )}
+                        );
+                      })}
                     </tbody>
                   </table>
                 </div>
@@ -571,19 +686,25 @@ const AdminPage: React.FC<{ onLogout: () => void }> = ({ onLogout }) => {
                 <h3>Purchases</h3>
                 <div className={styles['table-container']}>
                   <table className={styles['admin-table']}>
-                    <thead><tr><th>ID</th><th>User</th><th>Game</th><th>Price</th><th>Date</th><th>Payment</th><th>Actions</th></tr></thead>
+                    <thead>
+                      <tr>
+                        <th>User</th>
+                        <th>Game</th>
+                        <th>Price</th>
+                        <th>Date</th>
+                        <th>Payment Method</th>
+                        <th>Transaction Key</th>
+                      </tr>
+                    </thead>
                     <tbody>
                       {purchases.map(purchase => (
                         <tr key={purchase.id}>
-                          <td>{purchase.id}</td>
                           <td>{getUserName(purchase.userId)}</td>
                           <td>{getGameTitle(purchase.gameId)}</td>
                           <td>${purchase.price}</td>
                           <td>{purchase.purchaseDate}</td>
                           <td>{purchase.paymentMethod}</td>
-                          <td>
-                            <button onClick={() => deletePurchase(purchase.id)}>Delete</button>
-                          </td>
+                          <td>{purchase.transactionKey}</td>
                         </tr>
                       ))}
                     </tbody>
@@ -591,27 +712,109 @@ const AdminPage: React.FC<{ onLogout: () => void }> = ({ onLogout }) => {
                 </div>
               </div>
             )}
-            {activeTab === 'reviews' && (
-              <div className={styles['reviews-section']}>
-                <h3>Reviews</h3>
+            {activeTab === 'profit-report' && (
+              <div className={styles['profit-report-section']}>
+                <h3 style={{display: 'flex', alignItems: 'center', justifyContent: 'center'}}>
+                  <span>Profit Report</span>
+                </h3>
+                {/* Summary Cards */}
+                <div className={styles['stats-grid']} style={{ marginBottom: '32px' }}>
+                  {(() => {
+                    const profitReport = getProfitReport();
+                    return (
+                      <>
+                        <div className={styles['stat-card']}>
+                          <h3>Total Cost</h3>
+                          <div className={styles['stat-number']} style={{ color: '#e74c3c' }}>
+                            ${profitReport.totalCost.toFixed(2)}
+                          </div>
+                        </div>
+                        <div className={styles['stat-card']}>
+                          <h3>Total Revenue</h3>
+                          <div className={styles['stat-number']} style={{ color: '#27ae60' }}>
+                            ${profitReport.totalRevenue.toFixed(2)}
+                          </div>
+                        </div>
+                        <div className={styles['stat-card']}>
+                          <h3>Total Profit</h3>
+                          <div className={styles['stat-number']} style={{ 
+                            color: profitReport.overallStatus === 'profit' ? '#27ae60' : 
+                                   profitReport.overallStatus === 'loss' ? '#e74c3c' : '#f39c12'
+                          }}>
+                            ${profitReport.totalProfit.toFixed(2)}
+                          </div>
+                        </div>
+                        <div className={styles['stat-card']}>
+                          <h3>Profit Margin</h3>
+                          <div className={styles['stat-number']} style={{ 
+                            color: profitReport.totalProfitMargin > 0 ? '#27ae60' : 
+                                   profitReport.totalProfitMargin < 0 ? '#e74c3c' : '#f39c12'
+                          }}>
+                            {profitReport.totalProfitMargin.toFixed(1)}%
+                          </div>
+                        </div>
+                      </>
+                    );
+                  })()}
+                </div>
+                {/* Detailed Game Profits Table */}
                 <div className={styles['table-container']}>
                   <table className={styles['admin-table']}>
-                    <thead><tr><th>ID</th><th>Game</th><th>User</th><th>Rating</th><th>Content</th><th>Date</th><th>Actions</th></tr></thead>
+                    <thead>
+                      <tr>
+                        <th>Game</th>
+                        <th>Cost per Unit</th>
+                        <th>Quantity Purchased</th>
+                        <th>Total Cost</th>
+                        <th>Sold Quantity</th>
+                        <th>Revenue</th>
+                        <th>Profit/Loss</th>
+                        <th>Profit Margin</th>
+                        <th>Status</th>
+                      </tr>
+                    </thead>
                     <tbody>
-                      {reviews.map(review => (
-                        <tr key={review.id}>
-                          <td>{review.id}</td>
-                          <td>{getGameTitle(review.gameId)}</td>
-                          <td>{review.username}</td>
-                          <td>{review.rating}/5</td>
-                          <td className={styles['review-comment']}>{review.content}</td>
-                          <td>{review.date}</td>
-                          <td>
-                            <button onClick={() => setModal({ type: 'editReview', data: review })}>Edit</button>
-                            <button onClick={() => deleteReview(review.id)}>Delete</button>
-                          </td>
-                        </tr>
-                      ))}
+                      {(() => {
+                        const profitReport = getProfitReport();
+                        return profitReport.gameProfits.map(game => (
+                          <tr key={game.gameId}>
+                            <td>{game.title}</td>
+                            <td>${game.cost.toFixed(2)}</td>
+                            <td>{game.quantity}</td>
+                            <td>${game.totalCost.toFixed(2)}</td>
+                            <td>{game.soldQuantity}</td>
+                            <td>${game.revenue.toFixed(2)}</td>
+                            <td style={{ 
+                              color: game.status === 'profit' ? '#27ae60' : 
+                                     game.status === 'loss' ? '#e74c3c' : '#f39c12',
+                              fontWeight: 'bold'
+                            }}>
+                              ${game.profit.toFixed(2)}
+                            </td>
+                            <td style={{ 
+                              color: game.profitMargin > 0 ? '#27ae60' : 
+                                     game.profitMargin < 0 ? '#e74c3c' : '#f39c12'
+                            }}>
+                              {game.profitMargin.toFixed(1)}%
+                            </td>
+                            <td>
+                              <span style={{
+                                padding: '4px 8px',
+                                borderRadius: '4px',
+                                fontSize: '12px',
+                                fontWeight: 'bold',
+                                backgroundColor: game.status === 'profit' ? '#d5f4e6' : 
+                                               game.status === 'loss' ? '#fadbd8' : '#fef9e7',
+                                color: game.status === 'profit' ? '#27ae60' : 
+                                       game.status === 'loss' ? '#e74c3c' : '#f39c12'
+                              }}>
+                                {game.status === 'profit' ? '💰 Profit' : 
+                                 game.status === 'loss' ? '📉 Loss' : '⚖️ Break-even'}
+                              </span>
+                            </td>
+                          </tr>
+                        ));
+                      })()}
                     </tbody>
                   </table>
                 </div>

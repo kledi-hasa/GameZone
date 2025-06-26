@@ -240,4 +240,136 @@
   .login-footer {
     padding: 15px 20px;
   }
+}
+
+/* Success State Styles */
+.login-success-content {
+  padding: 30px 25px;
+  text-align: center;
+}
+
+.success-icon {
+  font-size: 48px;
+  margin-bottom: 20px;
+  animation: bounceIn 0.6s ease;
+}
+
+@keyframes bounceIn {
+  0% {
+    transform: scale(0.3);
+    opacity: 0;
+  }
+  50% {
+    transform: scale(1.05);
+  }
+  70% {
+    transform: scale(0.9);
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+.login-success-content h3 {
+  color: #2ecc71;
+  margin: 0 0 10px 0;
+  font-size: 24px;
+  font-weight: 600;
+}
+
+.login-success-content p {
+  color: #e0e0e0;
+  margin: 0 0 30px 0;
+  font-size: 16px;
+}
+
+.admin-options {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.admin-option-button {
+  width: 100%;
+  padding: 16px 20px;
+  border: none;
+  border-radius: 12px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+}
+
+.dashboard-button {
+  background: linear-gradient(135deg, #3498db 0%, #2980b9 100%);
+  color: white;
+  box-shadow: 0 4px 15px rgba(52, 152, 219, 0.3);
+}
+
+.dashboard-button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(52, 152, 219, 0.4);
+  background: linear-gradient(135deg, #2980b9 0%, #1f5f8b 100%);
+}
+
+.logout-button {
+  background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);
+  color: white;
+  box-shadow: 0 4px 15px rgba(231, 76, 60, 0.3);
+}
+
+.logout-button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(231, 76, 60, 0.4);
+  background: linear-gradient(135deg, #c0392b 0%, #a93226 100%);
+}
+
+.admin-option-button::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+  transition: left 0.5s ease;
+}
+
+.admin-option-button:hover::before {
+  left: 100%;
+}
+
+.admin-option-button:active {
+  transform: translateY(0);
+}
+
+/* Responsive Design for Success State */
+@media (max-width: 480px) {
+  .login-success-content {
+    padding: 20px;
+  }
+  
+  .success-icon {
+    font-size: 36px;
+  }
+  
+  .login-success-content h3 {
+    font-size: 20px;
+  }
+  
+  .login-success-content p {
+    font-size: 14px;
+  }
+  
+  .admin-option-button {
+    padding: 14px 16px;
+    font-size: 14px;
+  }
 } 

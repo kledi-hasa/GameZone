@@ -1,7 +1,6 @@
 import './App.css'
-import { BrowserRouter as Router, Routes, Route, useNavigate } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, useNavigate, useLocation } from 'react-router-dom';
 import Navbar from './components/Navbar.tsx'
-import AdminDashboard from './components/AdminDashboard.tsx'
 import GameBanner from "./components/GameBanner.tsx";
 import VideoModal from "./components/VideoModal.tsx";
 import AdminPage from "./pages/AdminPage.tsx";
@@ -10,7 +9,8 @@ import ProtectedRoute from "./components/ProtectedRoute.tsx";
 import Footer from "./components/Footer.tsx";
 import GameCarousel from './components/GameCarousel.tsx';
 import CheckoutModal from './components/CheckoutModal.tsx';
-import { useState, useEffect } from 'react';
+import { GameProvider } from './context/GameContext';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 
 function HomePage({ 
   isAuthenticated, 
@@ -383,12 +383,22 @@ function HomePage({
       localStorage.setItem('gamezone_currentUser', JSON.stringify(adminUser));
       localStorage.setItem('gamezone_isAuthenticated', 'true');
       setIsAuthenticated(true);
-      setIsLoginModalOpen(false);
       setLoginError('');
-      navigate('/admin');
+      // Don't close modal or navigate automatically - let user choose
     } else {
       setLoginError('Invalid username or password. Please try again.');
     }
+  };
+
+  const handleGoToAdminDashboard = () => {
+    navigate('/admin');
+  };
+
+  const handleLogoutFromModal = () => {
+    setIsAuthenticated(false);
+    setCurrentUser(null);
+    localStorage.removeItem('gamezone_isAuthenticated');
+    localStorage.removeItem('gamezone_currentUser');
   };
 
   const handleCloseLoginModal = () => {
@@ -714,6 +724,8 @@ function HomePage({
         onClose={handleCloseLoginModal}
         onLogin={handleLogin}
         error={loginError}
+        onGoToAdminDashboard={handleGoToAdminDashboard}
+        onLogout={handleLogoutFromModal}
       />
 
       <CheckoutModal
@@ -754,30 +766,44 @@ function App() {
     // localStorage.removeItem('gamezone_favorites');
   };
 
-  return (
-    <Router>
-      <Routes>
-        <Route path="/" element={
-          <HomePage 
-            isAuthenticated={isAuthenticated} 
-            setIsAuthenticated={setIsAuthenticated} 
-            isLoginModalOpen={isLoginModalOpen} 
-            setIsLoginModalOpen={setIsLoginModalOpen} 
-            loginError={loginError} 
-            setLoginError={setLoginError} 
+  // Wrapper component to use useLocation hook
+  const AppContent = () => {
+    const location = useLocation();
+    
+    return (
+      <>
+        <Routes>
+          <Route path="/" element={
+            <HomePage 
+              isAuthenticated={isAuthenticated} 
+              setIsAuthenticated={setIsAuthenticated} 
+              isLoginModalOpen={isLoginModalOpen} 
+              setIsLoginModalOpen={setIsLoginModalOpen} 
+              loginError={loginError} 
+              setLoginError={setLoginError} 
+            />
+          } />
+          <Route
+            path="/admin"
+            element={
+              <ProtectedRoute isAuthenticated={isAuthenticated}>
+                <AdminPage onLogout={handleLogout} />
+              </ProtectedRoute>
+            }
           />
-        } />
-        <Route
-          path="/admin"
-          element={
-            <ProtectedRoute isAuthenticated={isAuthenticated}>
-              <AdminPage onLogout={handleLogout} />
-            </ProtectedRoute>
-          }
-        />
-      </Routes>
-      <Footer />
-    </Router>
+        </Routes>
+        {/* Only show footer when not on admin page */}
+        {location.pathname !== '/admin' && <Footer />}
+      </>
+    );
+  };
+
+  return (
+    <GameProvider>
+      <Router>
+        <AppContent />
+      </Router>
+    </GameProvider>
   );
 }
 

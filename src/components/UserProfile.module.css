@@ -172,6 +172,32 @@
   transform: translateX(5px);
 }
 
+.admin-dashboard {
+  background: linear-gradient(135deg, #3498db 0%, #2980b9 100%);
+  border-color: rgba(52, 152, 219, 0.3);
+  color: white;
+  font-weight: 600;
+}
+
+.admin-dashboard:hover {
+  background: linear-gradient(135deg, #2980b9 0%, #1f5f8b 100%);
+  border-color: rgba(52, 152, 219, 0.5);
+  box-shadow: 0 4px 15px rgba(52, 152, 219, 0.3);
+}
+
+.admin-logout {
+  background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);
+  border-color: rgba(231, 76, 60, 0.3);
+  color: white;
+  font-weight: 600;
+}
+
+.admin-logout:hover {
+  background: linear-gradient(135deg, #c0392b 0%, #a93226 100%);
+  border-color: rgba(231, 76, 60, 0.5);
+  box-shadow: 0 4px 15px rgba(231, 76, 60, 0.3);
+}
+
 .logout-btn {
   width: 100%;
   background: linear-gradient(135deg, #e94560 0%, #f39c12 100%);
@@ -254,4 +280,10 @@
     padding: 12px 18px;
     font-size: 15px;
   }
+}
+
+.user-profile-modal {
+  max-height: 90vh;
+  overflow-y: auto;
+  padding-bottom: 32px;
 } 

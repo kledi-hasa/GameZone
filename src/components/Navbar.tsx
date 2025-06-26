@@ -1,15 +1,13 @@
 import React, { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import '../App.css';
 import UserProfile from './UserProfile';
 
 interface NavbarProps {
   onSearch: (query: string) => void;
-  onClearSearch: () => void;
   onShowFavorites: () => void;
   onShowCart: () => void;
   onLogoClick: () => void;
-  onAdminClick?: () => void;
   favoritesCount: number;
   cartCount: number;
   isAuthenticated: boolean;
@@ -18,20 +16,11 @@ interface NavbarProps {
   setCurrentUser: (user: {id: string; username: string; email: string; role?: string} | null) => void;
 }
 
-interface User {
-  id: string;
-  username: string;
-  email: string;
-  role?: string;
-}
-
 export default function Navbar({
   onSearch,
-  onClearSearch,
   onShowFavorites,
   onShowCart,
   onLogoClick,
-  onAdminClick,
   favoritesCount,
   cartCount,
   isAuthenticated,
@@ -65,11 +54,6 @@ export default function Navbar({
     onSearch(searchQuery);
   };
 
-  const handleClearSearch = () => {
-    setSearchQuery('');
-    onClearSearch();
-  };
-
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
@@ -87,12 +71,22 @@ export default function Navbar({
       return;
     }
 
-    const userData = {
-      ...formData,
-      role: formData.username.toLowerCase() === 'admin' ? 'admin' : 'user',
-    };
-
     try {
+      // Check for duplicate email
+      const usersRes = await fetch('http://localhost:3000/users');
+      const users = await usersRes.json();
+      if (users.some((u: any) => u.email === formData.email)) {
+        setMessage('Email is already registered.');
+        return;
+      }
+
+      const userData = {
+        ...formData,
+        role: formData.username.toLowerCase() === 'admin' ? 'admin' : 'user',
+        joinDate: new Date().toISOString().split('T')[0],
+        status: 'active'
+      };
+
       const response = await fetch('http://localhost:3000/users', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -100,14 +94,17 @@ export default function Navbar({
       });
 
       if (response.ok) {
-        setMessage('Signup successful!');
-        alert('User registered successfully!');
-        setFormData({ username: '', email: '', password: '', role: '' });
-        setShowSignupModal(false);
+        setMessage('Signup successful! You can now log in.');
+        setTimeout(() => {
+          setFormData({ username: '', email: '', password: '', role: '' });
+          setShowSignupModal(false);
+          setMessage('');
+        }, 1500);
       } else {
-        alert('Error registering user.');
+        setMessage('Error registering user.');
       }
     } catch (err) {
+      setMessage('Signup error. Please try again.');
       console.error('Signup error:', err);
     }
   };
@@ -151,6 +148,16 @@ export default function Navbar({
       );
 
       if (user) {
+        // Set joinDate if missing
+        if (!user.joinDate) {
+          const today = new Date().toISOString().split('T')[0];
+          await fetch(`http://localhost:3000/users/${user.id}`, {
+            method: 'PATCH',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ joinDate: today })
+          });
+          user.joinDate = today;
+        }
         setCurrentUser(user);
         setLoginMessage('Login successful!');
         alert(`Welcome back, ${user.username}!`);
@@ -172,10 +179,15 @@ export default function Navbar({
   const handleLogout = () => {
     setIsAuthenticated(false);
     setCurrentUser(null);
-    // Clear localStorage
     localStorage.removeItem('gamezone_isAuthenticated');
     localStorage.removeItem('gamezone_currentUser');
-    alert('Logged out successfully!');
+    localStorage.removeItem('gamezone_cart');
+    localStorage.removeItem('gamezone_favorites');
+    closeUserProfile();
+  };
+
+  const handleGoToAdminDashboard = () => {
+    navigate('/admin');
   };
 
   const closeLoginModal = () => {
@@ -198,17 +210,17 @@ export default function Navbar({
     <>
       <nav className="navbar navbar-expand-lg bg-body-tertiary">
         <div className="container-fluid">
-          <a className="navbar-brand" href="#" onClick={(e) => { e.preventDefault(); onLogoClick(); }}>
-            🎮 <span className="brand-gradient">GameZone</span>
+          <a className="navbar-brand" href="#" onClick={(e) => { e.preventDefault(); onLogoClick(); }} style={{ fontSize: 28, display: 'flex', alignItems: 'center', gap: 6 }}>
+            <span style={{ fontSize: 32, marginRight: 6 }}>🎮</span> <span className="brand-gradient" style={{ fontSize: 28, fontWeight: 'bold', letterSpacing: 1 }}>GameZone</span>
           </a>
 
           <button className="navbar-toggler" data-bs-toggle="collapse" data-bs-target="#navbarNav">
             <span className="navbar-toggler-icon"></span>
           </button>
 
-          <div className="collapse navbar-collapse" id="navbarNav">
+          <div className="collapse navbar-collapse" id="navbarNav" style={{ marginLeft: 0 }}>
             {/* Search */}
-            <div className="g2a-search-container mx-auto" style={{ maxWidth: '600px', flex: 1 }}>
+            <div className="g2a-search-container mx-auto" style={{ maxWidth: '600px', flex: 1, marginLeft: 0, padding: '14px 16px' }}>
               <input
                 className="g2a-search-input"
                 type="text"
@@ -293,6 +305,7 @@ export default function Navbar({
               user={currentUser}
               onLogout={handleLogout}
               onClose={closeUserProfile}
+              onGoToAdminDashboard={handleGoToAdminDashboard}
             />
           </div>
         </div>
