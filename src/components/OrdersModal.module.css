@@ -4,12 +4,14 @@
   left: 0;
   width: 100%;
   height: 100%;
-  background-color: rgba(0, 0, 0, 0.7);
+  background-color: rgba(0, 0, 0, 0.8);
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   justify-content: center;
-  z-index: 2000;
+  z-index: 3000;
   backdrop-filter: blur(5px);
+  padding: 10px 5px;
+  overflow: hidden;
 }
 
 .orders-modal-container {
@@ -17,11 +19,14 @@
   border-radius: 16px;
   max-width: 800px;
   width: 90%;
-  max-height: 80vh;
+  max-height: 85vh;
   overflow: hidden;
   box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);
   border: 1px solid rgba(255, 255, 255, 0.1);
   animation: slideIn 0.3s ease-out;
+  margin-top: 10px;
+  display: flex;
+  flex-direction: column;
 }
 
 @keyframes slideIn {
@@ -73,8 +78,10 @@
 
 .orders-modal-content {
   padding: 25px;
-  max-height: calc(80vh - 80px);
+  max-height: calc(85vh - 90px);
   overflow-y: auto;
+  flex: 1;
+  min-height: 0;
 }
 
 .loading-state {
@@ -307,6 +314,7 @@
   .orders-modal-container {
     width: 95%;
     max-height: 90vh;
+    margin-top: 5px;
   }
   
   .orders-modal-header {
@@ -319,7 +327,7 @@
   
   .orders-modal-content {
     padding: 20px;
-    max-height: calc(90vh - 70px);
+    max-height: calc(90vh - 80px);
   }
   
   .orders-summary {
@@ -375,7 +383,9 @@
 @media (max-width: 480px) {
   .orders-modal-container {
     width: 98%;
-    margin: 10px;
+    margin: 2px;
+    margin-top: 5px;
+    max-height: 95vh;
   }
   
   .orders-modal-header {
@@ -384,6 +394,23 @@
   
   .orders-modal-content {
     padding: 15px;
+    max-height: calc(95vh - 70px);
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(0, 166, 81, 0.3) transparent;
+  }
+  
+  .orders-modal-content::-webkit-scrollbar {
+    width: 4px;
+  }
+  
+  .orders-modal-content::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  
+  .orders-modal-content::-webkit-scrollbar-thumb {
+    background-color: rgba(0, 166, 81, 0.3);
+    border-radius: 2px;
   }
   
   .summary-value {

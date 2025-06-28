@@ -386,6 +386,24 @@
       "purchaseDate": "2025-06-25",
       "paymentMethod": "Card ending in 14 2",
       "transactionKey": "TXNf7mkx9zwq"
+    },
+    {
+      "id": "pinyl0egub",
+      "userId": "39a0",
+      "gameId": "2",
+      "price": 29.99,
+      "purchaseDate": "2025-06-28",
+      "paymentMethod": "Card ending in 3213",
+      "transactionKey": "TXNbzhtwrbi1"
+    },
+    {
+      "id": "p0v3d7viy3",
+      "userId": "39a0",
+      "gameId": "3",
+      "price": 19.99,
+      "purchaseDate": "2025-06-28",
+      "paymentMethod": "Card ending in 3213",
+      "transactionKey": "TXNfoe7n080i"
     }
   ]
 }
