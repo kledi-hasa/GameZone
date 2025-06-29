@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import '../App.css';
 import UserProfile from './UserProfile';
@@ -88,7 +88,7 @@ export default function Navbar({
 
     try {
       // Check for duplicate email
-      const usersRes = await fetch('http://localhost:3000/users');
+      const usersRes = await fetch('http://localhost:3002/users');
       const users = await usersRes.json();
       if (users.some((u: any) => u.email === formData.email)) {
         setMessage('Email is already registered.');
@@ -102,7 +102,7 @@ export default function Navbar({
         status: 'active'
       };
 
-      const response = await fetch('http://localhost:3000/users', {
+      const response = await fetch('http://localhost:3002/users', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(userData),
@@ -155,7 +155,7 @@ export default function Navbar({
 
     // Regular user login
     try {
-      const response = await fetch('http://localhost:3000/users');
+      const response = await fetch('http://localhost:3002/users');
       const users = await response.json();
 
       const user = users.find(
@@ -166,7 +166,7 @@ export default function Navbar({
         // Set joinDate if missing
         if (!user.joinDate) {
           const today = new Date().toISOString().split('T')[0];
-          await fetch(`http://localhost:3000/users/${user.id}`, {
+          await fetch(`http://localhost:3002/users/${user.id}`, {
             method: 'PATCH',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ joinDate: today })

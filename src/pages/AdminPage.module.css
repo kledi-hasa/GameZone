@@ -299,26 +299,55 @@
 
 /* Buttons in tables */
 .admin-table button {
-  background: linear-gradient(135deg, #00d4ff 0%, #0099cc 100%);
-  color: white;
-  border: none;
-  border-radius: 8px;
   padding: 8px 16px;
   margin-right: 8px;
-  font-size: 13px;
-  font-weight: 700;
+  border: none;
+  border-radius: 8px;
+  font-size: 12px;
+  font-weight: 600;
   cursor: pointer;
-  transition: all 0.2s ease;
-  box-shadow: 0 4px 12px rgba(0, 212, 255, 0.3);
+  transition: all 0.3s ease;
   text-transform: uppercase;
   letter-spacing: 0.5px;
-  border: 1px solid rgba(255, 255, 255, 0.2);
 }
+
 .admin-table button:last-child { margin-right: 0; }
+
 .admin-table button:hover {
-  background: linear-gradient(135deg, #0099cc 0%, #00d4ff 100%);
-  transform: translateY(-2px) scale(1.05);
-  box-shadow: 0 6px 16px rgba(0, 212, 255, 0.5);
+  transform: translateY(-2px);
+}
+
+.admin-table .edit-btn {
+  background: linear-gradient(135deg, #007bff 0%, #0056b3 100%);
+  color: white;
+  box-shadow: 0 3px 10px rgba(0, 123, 255, 0.3);
+}
+
+.admin-table .edit-btn:hover {
+  box-shadow: 0 6px 15px rgba(0, 123, 255, 0.5);
+  background: linear-gradient(135deg, #0056b3 0%, #007bff 100%);
+}
+
+.admin-table .delete-btn {
+  background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);
+  color: white;
+  box-shadow: 0 3px 10px rgba(220, 53, 69, 0.3);
+}
+
+.admin-table .delete-btn:hover {
+  box-shadow: 0 6px 15px rgba(220, 53, 69, 0.5);
+  background: linear-gradient(135deg, #c82333 0%, #dc3545 100%);
+}
+
+.admin-table .flag-btn {
+  background: linear-gradient(135deg, #ffc107 0%, #e0a800 100%);
+  color: #000;
+  box-shadow: 0 3px 10px rgba(255, 193, 7, 0.3);
+}
+
+.admin-table .flag-btn:hover {
+  box-shadow: 0 6px 15px rgba(255, 193, 7, 0.5);
+  background: linear-gradient(135deg, #e0a800 0%, #ffc107 100%);
 }
 
 /* Rating Display */
@@ -815,4 +844,64 @@
   -webkit-background-clip: initial !important;
   -webkit-text-fill-color: initial !important;
   background-clip: initial !important;
+}
+
+/* Header Action Buttons */
+.header-btn {
+  background: linear-gradient(135deg, #00d4ff 0%, #0099cc 100%);
+  color: white;
+  border: none;
+  padding: 12px 20px;
+  border-radius: 12px;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 15px rgba(0, 212, 255, 0.4);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  border: 2px solid rgba(255, 255, 255, 0.2);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 120px;
+  justify-content: center;
+}
+
+.header-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(0, 212, 255, 0.6);
+  background: linear-gradient(135deg, #0099cc 0%, #00d4ff 100%);
+  border-color: rgba(255, 255, 255, 0.4);
+}
+
+.header-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.header-btn:disabled:hover {
+  transform: none;
+  box-shadow: 0 4px 15px rgba(0, 212, 255, 0.4);
+}
+
+.refresh-btn {
+  background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+  box-shadow: 0 4px 15px rgba(40, 167, 69, 0.4);
+}
+
+.refresh-btn:hover {
+  background: linear-gradient(135deg, #20c997 0%, #28a745 100%);
+  box-shadow: 0 8px 20px rgba(40, 167, 69, 0.6);
+}
+
+.logout-btn {
+  background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);
+  box-shadow: 0 4px 15px rgba(220, 53, 69, 0.4);
+}
+
+.logout-btn:hover {
+  background: linear-gradient(135deg, #c82333 0%, #dc3545 100%);
+  box-shadow: 0 8px 20px rgba(220, 53, 69, 0.6);
 } 

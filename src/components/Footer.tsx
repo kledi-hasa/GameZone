@@ -4,7 +4,7 @@ import {
   faFacebookF, faTwitter, faInstagram, faTwitch, faYoutube, faDiscord 
 } from '@fortawesome/free-brands-svg-icons';
 import { 
-  faCreditCard, faHeadset, faLanguage, faQuestionCircle, faShieldAlt, faStore, faTags, faUsers 
+  faCreditCard, faHeadset, faLanguage, faStore, faTags, faUsers 
 } from '@fortawesome/free-solid-svg-icons';
 import styles from './Footer.module.css';
 

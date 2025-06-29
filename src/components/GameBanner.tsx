@@ -9,6 +9,7 @@ type GameBannerProps = {
   description: string;
   backgroundImage: string;
   price: number;
+  gameId?: string;
   trailerUrl?: string;
   isFavorited?: boolean;
   isInCart?: boolean;
@@ -28,6 +29,7 @@ const GameBanner: React.FC<GameBannerProps> = ({
   isInCart = false,
   onPlayTrailer,
   price,
+  gameId = "1",
   onAddToFavorites,
   onAddToCart}) => {
   const [isHeartFilled, setIsHeartFilled] = useState(isFavorited);
@@ -281,6 +283,7 @@ const GameBanner: React.FC<GameBannerProps> = ({
         onClose={handleCloseReviewModal}
         gameTitle={title}
         gameRating={rating}
+        gameId={gameId}
       />
     </div>
   );

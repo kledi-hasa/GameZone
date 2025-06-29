@@ -228,11 +228,11 @@ const AdminPage: React.FC<{ onLogout: () => void }> = ({ onLogout }) => {
     addUser,
     updateUser,
     deleteUser,
-    banUser,
-    activateUser,
     purchases,
+    deletePurchase,
     getStatistics,
-    getProfitReport
+    getProfitReport,
+    refreshData
   } = useGameContext();
 
   // Debug logging
@@ -240,7 +240,8 @@ const AdminPage: React.FC<{ onLogout: () => void }> = ({ onLogout }) => {
     games: games.length,
     comments: comments.length,
     users: users.length,
-    purchases: purchases.length
+    purchases: purchases.length,
+    purchasesData: purchases
   });
 
   const [activeTab, setActiveTab] = useState<Tab>('overview');
@@ -388,6 +389,29 @@ const AdminPage: React.FC<{ onLogout: () => void }> = ({ onLogout }) => {
   // Get statistics
   const stats = getStatistics();
 
+  const handleRefreshData = async () => {
+    setLoading(true);
+    try {
+      await refreshData();
+      setError('');
+    } catch (err) {
+      setError('Failed to refresh data.');
+    }
+    setLoading(false);
+  };
+
+  const handleDeletePurchase = async (id: string) => {
+    if (!window.confirm('Delete this purchase? This action cannot be undone.')) return;
+    setLoading(true);
+    try {
+      await deletePurchase(id);
+      setError('');
+    } catch (err) {
+      setError('Failed to delete purchase.');
+    }
+    setLoading(false);
+  };
+
   // Helper functions
   const getGameTitle = (id: string) => games.find(g => g.id === id)?.title || id;
   const getUserName = (id: string) => users.find(u => u.id === id)?.username || id;
@@ -448,17 +472,30 @@ const AdminPage: React.FC<{ onLogout: () => void }> = ({ onLogout }) => {
     return null;
   }, [modal, userForm, gameForm, handleUserFormChange, handleGameFormChange]);
 
+  // Auto refresh data when switching to purchases tab
+  useEffect(() => {
+    if (activeTab === 'purchases') {
+      console.log('AdminPage: Purchases tab activated, refreshing data...');
+      handleRefreshData();
+    }
+  }, [activeTab]);
+
   return (
     <div className={styles['admin-page']}>
       <div className={styles['admin-header']}>
         <div className={styles['admin-header-content']}>
           <div className={styles['admin-header-left']}>
             <button className={styles['back-button']} onClick={() => navigate('/')}>← Back to Store</button>
-            <h1>Admin Dashboard</h1>
+            <h1 className={styles['page-title']}>Admin Dashboard</h1>
           </div>
           <div className={styles['admin-header-right']}>
             <span className={styles['admin-badge']}>Administrator</span>
-            <button className={styles['logout-button']} onClick={() => { onLogout(); navigate('/'); }}>Logout</button>
+            <div style={{ display: 'flex', gap: '12px' }}>
+              <button onClick={handleRefreshData} disabled={loading} className={`${styles['header-btn']} ${styles['refresh-btn']}`}>
+                {loading ? '🔄 Loading...' : '🔄 Refresh Data'}
+              </button>
+              <button onClick={() => { onLogout(); navigate('/'); }} className={`${styles['header-btn']} ${styles['logout-btn']}`}>🚪 Logout</button>
+            </div>
           </div>
         </div>
       </div>
@@ -581,16 +618,8 @@ const AdminPage: React.FC<{ onLogout: () => void }> = ({ onLogout }) => {
                           <td>{user.totalPurchases ?? 0}</td>
                           <td>${(user.totalSpent ?? 0).toFixed(2)}</td>
                           <td>
-                            <button onClick={() => setModal({ type: 'editUser', data: user })}>Edit</button>
-                            {user.status === 'active' && (
-                              <>
-                                <button onClick={() => banUser(user.id)}>Ban</button>
-                              </>
-                            )}
-                            {(user.status === 'suspended' || user.status === 'banned') && (
-                              <button onClick={() => activateUser(user.id)}>Activate</button>
-                            )}
-                            <button onClick={() => handleDeleteUser(user.id)}>Delete</button>
+                            <button onClick={() => setModal({ type: 'editUser', data: user })} className={styles['edit-btn']}>Edit</button>
+                            <button onClick={() => handleDeleteUser(user.id)} className={styles['delete-btn']}>Delete</button>
                           </td>
                         </tr>
                       ))}
@@ -667,8 +696,8 @@ const AdminPage: React.FC<{ onLogout: () => void }> = ({ onLogout }) => {
                               <td>{realViews}</td>
                               <td>{realPurchases}</td>
                               <td>
-                                <button onClick={() => setModal({ type: 'editGame', data: game })}>Edit</button>
-                                <button onClick={() => handleDeleteGame(game.id)}>Delete</button>
+                                <button onClick={() => setModal({ type: 'editGame', data: game })} className={styles['edit-btn']}>Edit</button>
+                                <button onClick={() => handleDeleteGame(game.id)} className={styles['delete-btn']}>Delete</button>
                               </td>
                             </tr>
                           );
@@ -710,10 +739,10 @@ const AdminPage: React.FC<{ onLogout: () => void }> = ({ onLogout }) => {
                               </span>
                             </td>
                             <td>
-                              <button onClick={() => handleFlagComment(comment.id)}>
+                              <button onClick={() => handleFlagComment(comment.id)} className={styles['flag-btn']}>
                                 {comment.isInappropriate ? '✅ Unflag' : '🚩 Flag'}
                               </button>
-                              <button onClick={() => handleDeleteComment(comment.id)}>Delete</button>
+                              <button onClick={() => handleDeleteComment(comment.id)} className={styles['delete-btn']}>Delete</button>
                             </td>
                           </tr>
                         );
@@ -725,33 +754,54 @@ const AdminPage: React.FC<{ onLogout: () => void }> = ({ onLogout }) => {
             )}
             {activeTab === 'purchases' && (
               <div className={styles['purchases-section']}>
-                <h3>Purchases</h3>
-                <div className={styles['table-container']}>
-                  <table className={styles['admin-table']}>
-                    <thead>
-                      <tr>
-                        <th>User</th>
-                        <th>Game</th>
-                        <th>Price</th>
-                        <th>Date</th>
-                        <th>Payment Method</th>
-                        <th>Transaction Key</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {purchases.map(purchase => (
-                        <tr key={purchase.id}>
-                          <td>{getUserName(purchase.userId)}</td>
-                          <td>{getGameTitle(purchase.gameId)}</td>
-                          <td>${purchase.price}</td>
-                          <td>{purchase.purchaseDate}</td>
-                          <td>{purchase.paymentMethod}</td>
-                          <td>{purchase.transactionKey}</td>
+                <h3>Purchases ({purchases.length})</h3>
+                {purchases.length === 0 ? (
+                  <div style={{ textAlign: 'center', padding: '40px', color: '#666' }}>
+                    <p>No purchases found. {loading ? 'Loading...' : 'Try refreshing the data.'}</p>
+                    {!loading && (
+                      <button onClick={handleRefreshData} className={`${styles['header-btn']} ${styles['refresh-btn']}`}>
+                        🔄 Refresh Data
+                      </button>
+                    )}
+                  </div>
+                ) : (
+                  <div className={styles['table-container']}>
+                    <table className={styles['admin-table']}>
+                      <thead>
+                        <tr>
+                          <th>User</th>
+                          <th>Game</th>
+                          <th>Price</th>
+                          <th>Date</th>
+                          <th>Payment Method</th>
+                          <th>Transaction Key</th>
+                          <th>Actions</th>
                         </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
+                      </thead>
+                      <tbody>
+                        {purchases.map(purchase => (
+                          <tr key={purchase.id}>
+                            <td>{getUserName(purchase.userId)}</td>
+                            <td>{getGameTitle(purchase.gameId)}</td>
+                            <td>${purchase.price}</td>
+                            <td>{purchase.purchaseDate}</td>
+                            <td>{purchase.paymentMethod}</td>
+                            <td>{purchase.transactionKey}</td>
+                            <td>
+                              <button 
+                                onClick={() => handleDeletePurchase(purchase.id)} 
+                                className={styles['delete-btn']}
+                                title="Delete Purchase"
+                              >
+                                🗑️ Delete
+                              </button>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                )}
               </div>
             )}
             {activeTab === 'profit-report' && (

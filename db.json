@@ -1,14 +1,6 @@
 {
   "users": [
     {
-      "id": "09e3",
-      "username": "sadsad",
-      "email": "asdsa",
-      "password": "dsadsaasd",
-      "role": "user",
-      "status": "active"
-    },
-    {
       "id": "7670",
       "username": "sadsad",
       "email": "asdsa",
@@ -22,7 +14,8 @@
       "email": "kledi@gmail.com",
       "password": "kledi123",
       "role": "user",
-      "status": "active"
+      "status": "active",
+      "joinDate": "2025-06-29"
     },
     {
       "id": "a1af",
@@ -428,89 +421,26 @@
       "rating": 5,
       "helpful": 8,
       "verified": true
-    },
-    {
-      "username": "sara",
-      "content": "edjksdjkjskjkjkd",
-      "isInappropriate": false,
-      "userId": "",
-      "rating": 5,
-      "date": "2025-06-29",
-      "id": "-aycNvP"
-    },
-    {
-      "username": "sara",
-      "content": "edjksdjkjskjkjkd",
-      "isInappropriate": false,
-      "userId": "",
-      "rating": 5,
-      "date": "2025-06-29",
-      "id": "SsV8ZLA"
-    },
-    {
-      "username": "sara",
-      "content": "edjksdjkjskjkjkd",
-      "isInappropriate": false,
-      "userId": "",
-      "rating": 5,
-      "date": "2025-06-29",
-      "id": "35OfYet"
-    },
-    {
-      "username": "sara",
-      "content": "edjksdjkjskjkjkd",
-      "isInappropriate": false,
-      "userId": "",
-      "rating": 5,
-      "date": "2025-06-29",
-      "id": "3CrG3VA"
-    },
-    {
-      "username": "sara",
-      "content": "edjksdjkjskjkjkd",
-      "isInappropriate": false,
-      "userId": "",
-      "rating": 5,
-      "date": "2025-06-29",
-      "id": "UJEkLpV"
     }
   ],
   "purchases": [
     {
-      "id": "p7mk1lacmf",
+      "id": "pyiorb00nz",
       "userId": "39a0",
-      "gameId": "6",
-      "price": 26.95,
-      "purchaseDate": "2025-06-25",
-      "paymentMethod": "Card ending in 14 2",
-      "transactionKey": "TXN54hep0lre"
+      "gameId": "1",
+      "price": 39.99,
+      "purchaseDate": "2025-06-29",
+      "paymentMethod": "Card ending in 4121",
+      "transactionKey": "TXN1s2m6mep0"
     },
     {
-      "id": "phnfy4rmn0",
-      "userId": "39a0",
-      "gameId": "7",
-      "price": 50.5,
-      "purchaseDate": "2025-06-25",
-      "paymentMethod": "Card ending in 14 2",
-      "transactionKey": "TXNf7mkx9zwq"
-    },
-    {
-      "id": "pinyl0egub",
+      "id": "p8ygc3ew9g",
       "userId": "39a0",
       "gameId": "2",
       "price": 29.99,
-      "purchaseDate": "2025-06-28",
-      "paymentMethod": "Card ending in 3213",
-      "transactionKey": "TXNbzhtwrbi1"
-    },
-    {
-      "id": "p0v3d7viy3",
-      "userId": "39a0",
-      "gameId": "3",
-      "price": 19.99,
-      "purchaseDate": "2025-06-28",
-      "paymentMethod": "Card ending in 3213",
-      "transactionKey": "TXNfoe7n080i"
+      "purchaseDate": "2025-06-29",
+      "paymentMethod": "Card ending in 4121",
+      "transactionKey": "TXN3dlhrx3p7"
     }
   ]
 }

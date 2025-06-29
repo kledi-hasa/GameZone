@@ -56,7 +56,7 @@ const OrdersModal: React.FC<OrdersModalProps> = ({ isOpen, onClose, userId }) =>
     
     try {
       // Fetch purchases for the current user
-      const purchasesResponse = await fetch('http://localhost:3000/purchases');
+      const purchasesResponse = await fetch('http://localhost:3002/purchases');
       const allPurchases: Purchase[] = await purchasesResponse.json();
       
       // Filter purchases for the current user (handle both guest and registered users)
@@ -72,7 +72,7 @@ const OrdersModal: React.FC<OrdersModalProps> = ({ isOpen, onClose, userId }) =>
       setPurchases(userPurchases);
 
       // Fetch games data to get game titles
-      const gamesResponse = await fetch('http://localhost:3000/games');
+              const gamesResponse = await fetch('http://localhost:3002/games');
       const gamesData: Game[] = await gamesResponse.json();
       setGames(gamesData);
       

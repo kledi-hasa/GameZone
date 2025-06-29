@@ -71,6 +71,8 @@ interface GameContextType {
 
   purchases: Purchase[];
   addPurchase: (purchase: Omit<Purchase, 'id'>) => Promise<void>;
+  deletePurchase: (purchaseId: string) => Promise<void>;
+  refreshData: () => Promise<void>;
 
   getStatistics: () => {
     totalGames: number;
@@ -118,25 +120,34 @@ export const GameProvider: React.FC<GameProviderProps> = ({ children }) => {
   const [users, setUsers] = useState<User[]>([]);
   const [purchases, setPurchases] = useState<Purchase[]>([]);
 
+  const fetchData = async () => {
+    try {
+      console.log('GameContext: Starting to fetch data...');
+      const [gamesRes, commentsRes, usersRes, purchasesRes] = await Promise.all([
+        axios.get<Game[]>(`${API_URL}/games`),
+        axios.get<Comment[]>(`${API_URL}/comments`),
+        axios.get<User[]>(`${API_URL}/users`),
+        axios.get<Purchase[]>(`${API_URL}/purchases`)
+      ]);
+      console.log('GameContext: Data fetched successfully', {
+        games: gamesRes.data.length,
+        comments: commentsRes.data.length,
+        users: usersRes.data.length,
+        purchases: purchasesRes.data.length
+      });
+      setGames(gamesRes.data);
+      setComments(commentsRes.data);
+      setUsers(usersRes.data);
+      setPurchases(purchasesRes.data);
+      console.log('GameContext: State updated with purchases:', purchasesRes.data);
+    } catch (error) {
+      console.error('Error fetching data:', error);
+    }
+  };
+
   // Fetch all data on mount
   useEffect(() => {
-    const fetchAll = async () => {
-      try {
-        const [gamesRes, commentsRes, usersRes, purchasesRes] = await Promise.all([
-          axios.get<Game[]>(`${API_URL}/games`),
-          axios.get<Comment[]>(`${API_URL}/comments`),
-          axios.get<User[]>(`${API_URL}/users`),
-          axios.get<Purchase[]>(`${API_URL}/purchases`)
-        ]);
-        setGames(gamesRes.data);
-        setComments(commentsRes.data);
-        setUsers(usersRes.data);
-        setPurchases(purchasesRes.data);
-      } catch (error) {
-        console.error('Error fetching data:', error);
-      }
-    };
-    fetchAll();
+    fetchData();
   }, []);
 
   // After fetching users and purchases, compute dynamic fields
@@ -283,10 +294,30 @@ export const GameProvider: React.FC<GameProviderProps> = ({ children }) => {
   // ========== Purchases ==========
   const addPurchase = async (purchase: Omit<Purchase, 'id'>) => {
     try {
+      console.log('GameContext: Adding purchase:', purchase);
       const res = await axios.post<Purchase>(`${API_URL}/purchases`, purchase);
-      setPurchases(prev => [...prev, res.data]);
+      console.log('GameContext: Purchase added to database:', res.data);
+      setPurchases(prev => {
+        const updated = [...prev, res.data];
+        console.log('GameContext: Updated purchases state, new length:', updated.length);
+        return updated;
+      });
     } catch (error) {
       console.error('Failed to add purchase:', error);
+    }
+  };
+
+  const deletePurchase = async (purchaseId: string) => {
+    try {
+      console.log('GameContext: Deleting purchase:', purchaseId);
+      await axios.delete(`${API_URL}/purchases/${purchaseId}`);
+      setPurchases(prev => {
+        const updated = prev.filter(purchase => purchase.id !== purchaseId);
+        console.log('GameContext: Purchase deleted, new length:', updated.length);
+        return updated;
+      });
+    } catch (error) {
+      console.error('Failed to delete purchase:', error);
     }
   };
 
@@ -393,7 +424,7 @@ export const GameProvider: React.FC<GameProviderProps> = ({ children }) => {
     games, addGame, editGame, deleteGame, getGameById,
     comments, addComment, deleteComment, flagComment,
     users: usersWithStats, addUser, updateUser, deleteUser, suspendUser, banUser, activateUser,
-    purchases, addPurchase,
+    purchases, addPurchase, deletePurchase, refreshData: fetchData,
     getStatistics,
     getProfitReport
   };

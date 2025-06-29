@@ -10,7 +10,7 @@ import Footer from "./components/Footer.tsx";
 import GameCarousel from './components/GameCarousel.tsx';
 import CheckoutModal from './components/CheckoutModal.tsx';
 import { GameProvider } from './context/GameContext';
-import { useState, useEffect, useCallback, useMemo } from 'react';
+import { useState, useEffect } from 'react';
 
 function HomePage({ 
   isAuthenticated, 
@@ -323,11 +323,7 @@ function HomePage({
     setSearchQuery('');
   };
 
-  const handleGameSelect = (game: { trailerUrl?: string, title: string }) => {
-    if (game.trailerUrl) {
-      handlePlayTrailer(game.trailerUrl, game.title);
-    }
-  };
+
 
   const handlePlayTrailer = (trailerUrl: string, title: string) => {
     console.log('handlePlayTrailer called with:', { trailerUrl, title });
@@ -362,13 +358,7 @@ function HomePage({
     alert(`Review functionality for ${title} - Coming soon!`);
   };
 
-  const handleOpenAdminReport = () => {
-    if (isAuthenticated) {
-      navigate('/admin');
-    } else {
-      setIsLoginModalOpen(true);
-    }
-  };
+
 
   const handleLogin = (username: string, password: string) => {
     // Simple authentication - in real app, this would be an API call
@@ -426,7 +416,7 @@ function HomePage({
     transactionKey: string;
   }) => {
     try {
-      const response = await fetch('http://localhost:3000/purchases', {
+      const response = await fetch('http://localhost:3002/purchases', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -454,19 +444,7 @@ function HomePage({
     alert('Purchase completed successfully! Your games are now available in your library.');
   };
 
-  const onAddGame = (newGame: any) => {
-    const gameExists = games.some(game => game.id === newGame.id);
-    if (!gameExists) {
-      const updatedGames = [...games, newGame];
-      setFavorites(favorites.concat(newGame.title));
-      setCart(cart.concat(newGame.title));
-      localStorage.setItem('games', JSON.stringify(updatedGames));
-      localStorage.setItem('favorites', JSON.stringify(favorites.concat(newGame.title)));
-      localStorage.setItem('cart', JSON.stringify(cart.concat(newGame.title)));
-    } else {
-      alert("Game already exists!");
-    }
-  };
+
 
   return (
     <div className="main-container">
@@ -529,6 +507,7 @@ function HomePage({
               description={game.description}
               backgroundImage={game.backgroundImage}
               price={game.price}
+              gameId={game.id.toString()}
               trailerUrl={game.trailerUrl}
               isFavorited={favorites.includes(game.title)}
               isInCart={cart.includes(game.title)}
@@ -576,6 +555,7 @@ function HomePage({
                   description={game.description}
                   backgroundImage={game.backgroundImage}
                   price={game.price}
+                  gameId={game.id.toString()}
                   trailerUrl={game.trailerUrl}
                   isFavorited={favorites.includes(game.title)}
                   isInCart={cart.includes(game.title)}
@@ -655,6 +635,7 @@ function HomePage({
             description={game.description}
             backgroundImage={game.backgroundImage}
             price={game.price}
+            gameId={game.id.toString()}
             trailerUrl={game.trailerUrl}
             isFavorited={favorites.includes(game.title)}
             isInCart={cart.includes(game.title)}
@@ -698,6 +679,7 @@ function HomePage({
             description={game.description}
             backgroundImage={game.backgroundImage}
             price={game.price}
+            gameId={game.id.toString()}
             trailerUrl={game.trailerUrl}
             isFavorited={favorites.includes(game.title)}
             isInCart={cart.includes(game.title)}
