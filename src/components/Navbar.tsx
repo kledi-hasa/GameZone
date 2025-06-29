@@ -5,6 +5,7 @@ import UserProfile from './UserProfile';
 
 interface NavbarProps {
   onSearch: (query: string) => void;
+  onClearSearch: () => void;
   onShowFavorites: () => void;
   onShowCart: () => void;
   onLogoClick: () => void;

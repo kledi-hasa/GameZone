@@ -8,10 +8,32 @@ type Tab = 'overview' | 'users' | 'games' | 'comments' | 'purchases' | 'profit-r
 // Modal Component
 function Modal({ title, onClose, children }: { title: string, onClose: () => void, children: React.ReactNode }) {
   return (
-    <div style={{ position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh', background: 'rgba(0,0,0,0.7)', zIndex: 10000, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-      <div style={{ background: 'white', borderRadius: 12, padding: 32, minWidth: 320, maxWidth: 480, width: '100%', position: 'relative' }}>
+    <div style={{ 
+      position: 'fixed', 
+      top: 0, 
+      left: 0, 
+      width: '100vw', 
+      height: '100vh', 
+      background: 'rgba(0,0,0,0.7)', 
+      zIndex: 10000, 
+      display: 'flex', 
+      alignItems: 'center', 
+      justifyContent: 'center',
+      padding: '20px'
+    }}>
+      <div style={{ 
+        background: 'white', 
+        borderRadius: 12, 
+        padding: 32, 
+        minWidth: 320, 
+        maxWidth: '600px',
+        maxHeight: '90vh',
+        width: '100%', 
+        position: 'relative',
+        overflow: 'auto'
+      }}>
         <button onClick={onClose} style={{ position: 'absolute', top: 12, right: 12, fontSize: 24, background: 'none', border: 'none', cursor: 'pointer' }}>×</button>
-        <h2 style={{ marginTop: 0 }}>{title}</h2>
+        <h2 style={{ marginTop: 0, marginRight: 40 }}>{title}</h2>
         {children}
       </div>
     </div>
@@ -92,82 +114,102 @@ const GameForm = React.memo(({ form, onChange, onSubmit, type, onClose }: {
   onClose: () => void
 }) => (
   <Modal title={type === 'addGame' ? 'Add Game' : 'Edit Game'} onClose={onClose}>
-    <form onSubmit={onSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+    <form onSubmit={onSubmit} style={{ 
+      display: 'flex', 
+      flexDirection: 'column', 
+      gap: '16px',
+      minWidth: '500px',
+      maxWidth: '800px'
+    }}>
       <input 
         value={form.title} 
         onChange={e => onChange('title', e.target.value)} 
         placeholder="Game Name" 
         required 
-        style={{ padding: '8px', borderRadius: '4px', border: '1px solid #ccc' }}
+        style={{ padding: '12px', borderRadius: '4px', border: '1px solid #ccc', fontSize: '14px' }}
       />
       <textarea 
         value={form.description} 
         onChange={e => onChange('description', e.target.value)} 
         placeholder="Description" 
         required 
-        style={{ padding: '8px', borderRadius: '4px', border: '1px solid #ccc', minHeight: '100px' }}
+        style={{ padding: '12px', borderRadius: '4px', border: '1px solid #ccc', minHeight: '100px', fontSize: '14px', resize: 'vertical' }}
       />
       <input 
         value={form.backgroundImage} 
         onChange={e => onChange('backgroundImage', e.target.value)} 
         placeholder="Picture URL" 
         required 
-        style={{ padding: '8px', borderRadius: '4px', border: '1px solid #ccc' }}
+        style={{ padding: '12px', borderRadius: '4px', border: '1px solid #ccc', fontSize: '14px' }}
       />
-      <input 
-        type="number" 
-        value={form.price} 
-        onChange={e => onChange('price', Number(e.target.value))} 
-        placeholder="Selling Price" 
-        required 
-        min={0} 
-        step={0.01} 
-        style={{ padding: '8px', borderRadius: '4px', border: '1px solid #ccc' }}
-      />
-      <input 
-        type="number" 
-        value={form.cost || ''} 
-        onChange={e => onChange('cost', Number(e.target.value))} 
-        placeholder="Purchase Cost per Unit" 
-        required 
-        min={0} 
-        step={0.01} 
-        style={{ padding: '8px', borderRadius: '4px', border: '1px solid #ccc' }}
-      />
-      <input 
-        type="number" 
-        value={form.quantity || ''} 
-        onChange={e => onChange('quantity', Number(e.target.value))} 
-        placeholder="Quantity Purchased" 
-        required 
-        min={1} 
-        step={1} 
-        style={{ padding: '8px', borderRadius: '4px', border: '1px solid #ccc' }}
-      />
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+        <input 
+          type="number" 
+          value={form.price} 
+          onChange={e => onChange('price', Number(e.target.value))} 
+          placeholder="Selling Price" 
+          required 
+          min={0} 
+          step={0.01} 
+          style={{ padding: '12px', borderRadius: '4px', border: '1px solid #ccc', fontSize: '14px' }}
+        />
+        <input 
+          type="number" 
+          value={form.cost || ''} 
+          onChange={e => onChange('cost', Number(e.target.value))} 
+          placeholder="Purchase Cost per Unit" 
+          required 
+          min={0} 
+          step={0.01} 
+          style={{ padding: '12px', borderRadius: '4px', border: '1px solid #ccc', fontSize: '14px' }}
+        />
+      </div>
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+        <input 
+          type="number" 
+          value={form.quantity || ''} 
+          onChange={e => onChange('quantity', Number(e.target.value))} 
+          placeholder="Quantity Purchased" 
+          required 
+          min={1} 
+          step={1} 
+          style={{ padding: '12px', borderRadius: '4px', border: '1px solid #ccc', fontSize: '14px' }}
+        />
+        <input 
+          type="number"
+          min="1"
+          max="10"
+          value={form.rating} 
+          onChange={e => onChange('rating', Number(e.target.value))} 
+          placeholder="Rating (1-10)" 
+          required 
+          style={{ padding: '12px', borderRadius: '4px', border: '1px solid #ccc', fontSize: '14px' }}
+        />
+      </div>
       <input 
         value={form.trailerUrl || ''} 
         onChange={e => onChange('trailerUrl', e.target.value)} 
         placeholder="YouTube Trailer Link (optional)" 
-        style={{ padding: '8px', borderRadius: '4px', border: '1px solid #ccc' }}
+        style={{ padding: '12px', borderRadius: '4px', border: '1px solid #ccc', fontSize: '14px' }}
       />
       <input 
         value={form.releaseDate} 
         onChange={e => onChange('releaseDate', e.target.value)} 
         placeholder="Release Date" 
         required 
-        style={{ padding: '8px', borderRadius: '4px', border: '1px solid #ccc' }}
+        style={{ padding: '12px', borderRadius: '4px', border: '1px solid #ccc', fontSize: '14px' }}
       />
-      <input 
-        type="number"
-        min="1"
-        max="10"
-        value={form.rating} 
-        onChange={e => onChange('rating', Number(e.target.value))} 
-        placeholder="Rating (1-10)" 
-        required 
-        style={{ padding: '8px', borderRadius: '4px', border: '1px solid #ccc' }}
-      />
-      <button type="submit" style={{ padding: '12px', backgroundColor: '#007bff', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer' }}>Save</button>
+      <button type="submit" style={{ 
+        padding: '14px', 
+        backgroundColor: '#007bff', 
+        color: 'white', 
+        border: 'none', 
+        borderRadius: '4px', 
+        cursor: 'pointer',
+        fontSize: '16px',
+        fontWeight: 'bold',
+        marginTop: '8px'
+      }}>Save Game</button>
     </form>
   </Modal>
 ));

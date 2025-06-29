@@ -163,7 +163,7 @@
       "description": "An expansive open-world action RPG where you explore the Lands Between, uncover mysteries, and face epic bosses.",
       "backgroundImage": "https://buyonline.games/wp-content/uploads/2023/07/Xbox-Series-S-Games-1.jpg",
       "price": 39.99,
-      "cost": 25.00,
+      "cost": 25,
       "quantity": 5,
       "trailerUrl": "https://www.youtube.com/watch?v=E3Huy2cdih0"
     },
@@ -175,7 +175,7 @@
       "description": "A sprawling open-world crime adventure set in Los Santos.",
       "backgroundImage": "https://static1.dualshockersimages.com/wordpress/wp-content/uploads/2022/05/gta-5-update-may-17.jpg",
       "price": 29.99,
-      "cost": 18.00,
+      "cost": 18,
       "quantity": 8,
       "trailerUrl": "https://www.youtube.com/watch?v=QkkoHAzjnUs"
     },
@@ -187,7 +187,7 @@
       "description": "A story-driven open world RPG set in a visually stunning fantasy universe full of meaningful choices and impactful consequences.",
       "backgroundImage": "https://media.rawg.io/media/games/618/618c2031a07bbff6b4f611f10b6bcdbc.jpg",
       "price": 19.99,
-      "cost": 10.00,
+      "cost": 10,
       "quantity": 6,
       "trailerUrl": "https://www.youtube.com/watch?v=XHrskkHf958"
     },
@@ -199,7 +199,7 @@
       "description": "An epic tale of life in America at the dawn of the modern age.",
       "backgroundImage": "https://media.rawg.io/media/games/511/5118aff5091cb3efec399c808f8c598f.jpg",
       "price": 34.99,
-      "cost": 20.00,
+      "cost": 20,
       "quantity": 4,
       "trailerUrl": "https://www.youtube.com/watch?v=gmA-BOIVKQU"
     },
@@ -211,7 +211,7 @@
       "description": "An open-world, action-adventure story set in Night City, a megalopolis obsessed with power, glamour and body modification.",
       "backgroundImage": "https://www.cyberpunk.net/build/images/social-thumbnail-en-ddcf4d23.jpg",
       "price": 24.99,
-      "cost": 12.00,
+      "cost": 12,
       "quantity": 5,
       "trailerUrl": "https://www.youtube.com/watch?v=8X2kIfS6fb8"
     },
@@ -223,7 +223,7 @@
       "description": "A game about placing blocks and going on adventures.",
       "backgroundImage": "https://media.rawg.io/media/games/198/1988a337305e008b41d7f536ce9b73f6.jpg",
       "price": 26.95,
-      "cost": 15.00,
+      "cost": 15,
       "quantity": 10,
       "trailerUrl": "https://www.youtube.com/watch?v=MmB9b5nj_Vb"
     },
@@ -235,7 +235,7 @@
       "description": "A free-to-play battle royale game with numerous game modes for every type of game player.",
       "backgroundImage": "https://cdn2.unrealengine.com/keyart-overscan-nologo-2-2276x1280-aa06338f9aae.jpg",
       "price": 50.5,
-      "cost": 30.00,
+      "cost": 30,
       "quantity": 3,
       "trailerUrl": "https://www.youtube.com/watch?v=2gUtfBmw86Y"
     },
@@ -247,7 +247,7 @@
       "description": "A gritty, dramatic single-player campaign and classic multiplayer modes.",
       "backgroundImage": "https://images.ctfassets.net/vfkpgemp7ek3/1240004181/8b1fdb1ab8330de77e0f8ecf1f5757c1/call-of-duty-mobile-hero-a.jpg",
       "price": 59.99,
-      "cost": 40.00,
+      "cost": 40,
       "quantity": 2,
       "trailerUrl": "https://www.youtube.com/watch?v=bH1lHCirCGI"
     },
@@ -259,7 +259,7 @@
       "description": "A vibrant team-based shooter set on a near-future earth.",
       "backgroundImage": "https://th.bing.com/th/id/R.8ddaa1c3a73e1ad4354cc4d31577d21c?rik=Gj9Rh3u%2fyyzy2A&pid=ImgRaw&r=0",
       "price": 39.99,
-      "cost": 22.00,
+      "cost": 22,
       "quantity": 4,
       "trailerUrl": "https://www.youtube.com/watch?v=FqnKB22pOC0"
     },
@@ -271,7 +271,7 @@
       "description": "A fast-paced, competitive online game that blends the speed and intensity of an RTS with RPG elements.",
       "backgroundImage": "https://www.talkesport.com/wp-content/uploads/league-of-legends.webp",
       "price": 65.4,
-      "cost": 40.00,
+      "cost": 40,
       "quantity": 2,
       "trailerUrl": "https://www.youtube.com/watch?v=BGtROJeMPeE"
     },
@@ -283,7 +283,7 @@
       "description": "A 5v5 character-based tactical shooter.",
       "backgroundImage": "https://media.rawg.io/media/games/456/456dea5e1c7e3cd07060c14e96612001.jpg",
       "price": 70.5,
-      "cost": 50.00,
+      "cost": 50,
       "quantity": 1,
       "trailerUrl": "https://www.youtube.com/watch?v=lWr6dhTcu-E"
     },
@@ -295,7 +295,7 @@
       "description": "A free-to-play Battle Royale game where legendary competitors battle for glory, fame, and fortune on the fringes of the Frontier.",
       "backgroundImage": "https://bleedingcool.com/wp-content/uploads/2024/05/Apex-Legends-Upheaval-Art-2-2000x1125.jpg",
       "price": 80.2,
-      "cost": 60.00,
+      "cost": 60,
       "quantity": 1,
       "trailerUrl": "https://www.youtube.com/watch?v=innmNewjkuk"
     },
@@ -307,7 +307,7 @@
       "description": "Become Eivor, a legendary Viking raider on a quest for glory.",
       "backgroundImage": "https://media.rawg.io/media/games/618/618c2031a07bbff6b4f611f10b6bcdbc.jpg",
       "price": 49.99,
-      "cost": 30.00,
+      "cost": 30,
       "quantity": 3,
       "trailerUrl": "https://www.youtube.com/watch?v=ssrNcwxALS4"
     },
@@ -319,7 +319,7 @@
       "description": "The world's game comes to life with new ways to play and new competitions.",
       "backgroundImage": "https://cdn.mos.cms.futurecdn.net/67hnqFzV58p8A3dHavqU8N.jpg",
       "price": 59.99,
-      "cost": 35.00,
+      "cost": 35,
       "quantity": 2,
       "trailerUrl": "https://www.youtube.com/watch?v=o3V-GvvzjE4"
     },
@@ -331,7 +331,7 @@
       "description": "An exhilarating action role playing game developed by the award winning Guerrilla Games.",
       "backgroundImage": "https://th.bing.com/th/id/R.84654eb36a8bc173944105cc8332c2a0?rik=s%2fWqw93qWl1nqA&riu=http%3a%2f%2fimages.pushsquare.com%2fscreenshots%2f68777%2flarge.jpg&ehk=88%2b8aRO9erCuRLDh8mlgnv338Z4402i4sTluUJikQGE%3d&risl=&pid=ImgRaw&r=0",
       "price": 19.99,
-      "cost": 8.00,
+      "cost": 8,
       "quantity": 5,
       "trailerUrl": "https://www.youtube.com/watch?v=u4-FCsiF5x4"
     },
@@ -343,7 +343,7 @@
       "description": "The ultimate combination of speed and power with the next leap in push-forward, first-person combat.",
       "backgroundImage": "https://media.rawg.io/media/games/198/1988a337305e008b41d7f536ce9b73f6.jpg",
       "price": 39.99,
-      "cost": 20.00,
+      "cost": 20,
       "quantity": 3,
       "trailerUrl": "https://www.youtube.com/watch?v=FkklG9MA0vM"
     },
@@ -355,7 +355,7 @@
       "description": "A shinobi must take revenge on his enemies in late 1500s Sengoku Japan.",
       "backgroundImage": "https://th.bing.com/th/id/OIP.bk5I3DdP_jCJ7BFgDY3jewHaFI?r=0&rs=1&pid=ImgDetMain",
       "price": 29.99,
-      "cost": 15.00,
+      "cost": 15,
       "quantity": 4,
       "trailerUrl": "https://www.youtube.com/watch?v=rXMX4YJ7Lks"
     },
@@ -367,7 +367,7 @@
       "description": "An online and local party game of teamwork and betrayal for 4-15 players.",
       "backgroundImage": "https://th.bing.com/th/id/R.c482e0fe378a66bdcb3de7b1373b829c?rik=%2fWP3TtRt4ryvhg&pid=ImgRaw&r=0",
       "price": 4.99,
-      "cost": 1.00,
+      "cost": 1,
       "quantity": 15,
       "trailerUrl": "https://www.youtube.com/watch?v=NSJ4cESNQfE"
     },
@@ -379,7 +379,7 @@
       "description": "You've inherited your grandfather's old farm plot in Stardew Valley.",
       "backgroundImage": "https://www.pockettactics.com/wp-content/sites/pockettactics/2023/07/stardew-valley-switch-review.jpg",
       "price": 14.99,
-      "cost": 5.00,
+      "cost": 5,
       "quantity": 6,
       "trailerUrl": "https://www.youtube.com/watch?v=ot7uXNQskhs"
     },
@@ -391,7 +391,7 @@
       "description": "Dig, fight, explore, build! Nothing is impossible in this action-packed adventure game.",
       "backgroundImage": "https://media.rawg.io/media/games/456/456dea5e1c7e3cd07060c14e96612001.jpg",
       "price": 9.99,
-      "cost": 3.00,
+      "cost": 3,
       "quantity": 8,
       "trailerUrl": "https://www.youtube.com/watch?v=H77Zfzy4LWw"
     },
@@ -403,7 +403,7 @@
       "description": "Step into a world of discovery, exploration and adventure in The Legend of Zelda: Breath of the Wild.",
       "backgroundImage": "https://gamelegends.it/wp-content/uploads/2023/05/zelda-games-1.jpg",
       "price": 59.99,
-      "cost": 40.00,
+      "cost": 40,
       "quantity": 2,
       "trailerUrl": "https://www.youtube.com/watch?v=zw47_q9wBEg"
     }
@@ -428,6 +428,51 @@
       "rating": 5,
       "helpful": 8,
       "verified": true
+    },
+    {
+      "username": "sara",
+      "content": "edjksdjkjskjkjkd",
+      "isInappropriate": false,
+      "userId": "",
+      "rating": 5,
+      "date": "2025-06-29",
+      "id": "-aycNvP"
+    },
+    {
+      "username": "sara",
+      "content": "edjksdjkjskjkjkd",
+      "isInappropriate": false,
+      "userId": "",
+      "rating": 5,
+      "date": "2025-06-29",
+      "id": "SsV8ZLA"
+    },
+    {
+      "username": "sara",
+      "content": "edjksdjkjskjkjkd",
+      "isInappropriate": false,
+      "userId": "",
+      "rating": 5,
+      "date": "2025-06-29",
+      "id": "35OfYet"
+    },
+    {
+      "username": "sara",
+      "content": "edjksdjkjskjkjkd",
+      "isInappropriate": false,
+      "userId": "",
+      "rating": 5,
+      "date": "2025-06-29",
+      "id": "3CrG3VA"
+    },
+    {
+      "username": "sara",
+      "content": "edjksdjkjskjkjkd",
+      "isInappropriate": false,
+      "userId": "",
+      "rating": 5,
+      "date": "2025-06-29",
+      "id": "UJEkLpV"
     }
   ],
   "purchases": [
