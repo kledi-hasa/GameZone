@@ -36,6 +36,20 @@ const OrdersModal: React.FC<OrdersModalProps> = ({ isOpen, onClose, userId }) =>
     }
   }, [isOpen, userId]);
 
+  // Prevent body scrolling when modal is open
+  useEffect(() => {
+    if (isOpen) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = 'unset';
+    }
+
+    // Cleanup function to restore scroll on unmount
+    return () => {
+      document.body.style.overflow = 'unset';
+    };
+  }, [isOpen]);
+
   const fetchOrders = async () => {
     setLoading(true);
     setError('');
@@ -94,7 +108,12 @@ const OrdersModal: React.FC<OrdersModalProps> = ({ isOpen, onClose, userId }) =>
   if (!isOpen) return null;
 
   return (
-    <div className={styles['orders-modal-overlay']}>
+    <div 
+      className={styles['orders-modal-overlay']}
+      onClick={(e) => {
+        if (e.target === e.currentTarget) onClose();
+      }}
+    >
       <div className={styles['orders-modal-container']}>
         <div className={styles['orders-modal-header']}>
           <h2>My Orders</h2>

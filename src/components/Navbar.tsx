@@ -47,6 +47,20 @@ export default function Navbar({
   const [loginMessage, setLoginMessage] = useState('');
   const navigate = useNavigate();
 
+  // Prevent body scrolling when modal is open
+  useEffect(() => {
+    if (showUserProfile) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = 'unset';
+    }
+
+    // Cleanup function to restore scroll on unmount
+    return () => {
+      document.body.style.overflow = 'unset';
+    };
+  }, [showUserProfile]);
+
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSearchQuery(e.target.value);
   };
@@ -279,10 +293,11 @@ export default function Navbar({
             display: 'flex',
             alignItems: 'flex-start',
             justifyContent: 'center',
-            padding: '20px',
+            padding: '10px 5px',
             backgroundColor: 'rgba(0, 0, 0, 0.8)',
             zIndex: 2000,
-            backdropFilter: 'blur(5px)'
+            backdropFilter: 'blur(5px)',
+            overflow: 'hidden'
           }}
           onClick={(e) => {
             if (e.target === e.currentTarget) closeUserProfile();
@@ -291,15 +306,9 @@ export default function Navbar({
           <div 
             className="custom-modal-content"
             style={{
-              background: 'linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%)',
-              borderRadius: '15px',
-              boxShadow: '0 20px 40px rgba(0, 0, 0, 0.5)',
-              maxWidth: '500px',
-              width: '100%',
-              maxHeight: '90vh',
-              overflow: 'hidden',
               animation: 'modalSlideIn 0.3s ease-out',
-              marginTop: '20px'
+              margin: '0',
+              marginTop: '10px'
             }}
           >
             <UserProfile 

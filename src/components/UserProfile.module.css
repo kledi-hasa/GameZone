@@ -4,10 +4,13 @@
   padding: 0;
   max-width: 400px;
   width: 90%;
+  max-height: 90vh;
   overflow: hidden;
   box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);
   border: 1px solid rgba(255, 255, 255, 0.1);
   animation: slideIn 0.3s ease-out;
+  display: flex;
+  flex-direction: column;
 }
 
 @keyframes slideIn {
@@ -97,6 +100,9 @@
 
 .user-profile-content {
   padding: 25px;
+  overflow-y: auto;
+  flex: 1;
+  min-height: 0;
 }
 
 .profile-section {
@@ -151,6 +157,8 @@
   display: flex;
   flex-direction: column;
   gap: 10px;
+  width: 100%;
+  min-height: auto;
 }
 
 .action-btn {
@@ -164,6 +172,9 @@
   cursor: pointer;
   transition: all 0.3s ease;
   text-align: left;
+  display: block;
+  width: 100%;
+  margin-bottom: 0;
 }
 
 .action-btn:hover {
@@ -239,14 +250,115 @@
 }
 
 /* Responsive Design */
-@media (max-width: 480px) {
+@media (max-width: 768px) {
   .user-profile-container {
     width: 95%;
-    margin: 10px;
+    max-width: 500px;
+    max-height: 85vh;
   }
   
   .user-profile-header {
-    padding: 15px 20px;
+    padding: 18px 22px;
+  }
+  
+  .user-avatar {
+    width: 55px;
+    height: 55px;
+    margin-right: 14px;
+  }
+  
+  .avatar-text {
+    font-size: 22px;
+  }
+  
+  .username {
+    font-size: 17px;
+  }
+  
+  .user-email {
+    font-size: 13px;
+  }
+  
+  .user-profile-content {
+    padding: 22px;
+  }
+  
+  .action-btn {
+    padding: 11px 15px;
+    font-size: 13.5px;
+    display: block !important;
+    width: 100% !important;
+    visibility: visible !important;
+  }
+  
+  .logout-btn {
+    padding: 13px 19px;
+    font-size: 15.5px;
+  }
+}
+
+@media (max-width: 600px) {
+  .user-profile-container {
+    width: 96%;
+    max-width: none;
+    max-height: 88vh;
+    margin: 5px;
+  }
+  
+  .user-profile-header {
+    padding: 16px 20px;
+  }
+  
+  .user-avatar {
+    width: 52px;
+    height: 52px;
+    margin-right: 13px;
+  }
+  
+  .avatar-text {
+    font-size: 21px;
+  }
+  
+  .username {
+    font-size: 16.5px;
+  }
+  
+  .user-email {
+    font-size: 12.5px;
+  }
+  
+  .user-profile-content {
+    padding: 20px;
+  }
+  
+  .profile-section {
+    margin-bottom: 20px;
+  }
+  
+  .action-btn {
+    padding: 10px 14px;
+    font-size: 13px;
+    display: block !important;
+    width: 100% !important;
+    visibility: visible !important;
+  }
+  
+  .logout-btn {
+    padding: 12px 18px;
+    font-size: 15px;
+  }
+}
+
+@media (max-width: 480px) {
+  .user-profile-container {
+    width: 98%;
+    max-height: 92vh;
+    margin: 2px;
+    border-radius: 12px;
+  }
+  
+  .user-profile-header {
+    padding: 15px 18px;
   }
   
   .user-avatar {
@@ -264,16 +376,57 @@
   }
   
   .user-email {
-    font-size: 13px;
+    font-size: 12px;
+  }
+  
+  .user-role {
+    font-size: 11px;
+    padding: 3px 10px;
+  }
+  
+  .close-btn {
+    width: 30px;
+    height: 30px;
+    font-size: 18px;
   }
   
   .user-profile-content {
-    padding: 20px;
+    padding: 18px;
+  }
+  
+  .profile-section {
+    margin-bottom: 18px;
+  }
+  
+  .profile-section h5 {
+    font-size: 15px;
+    margin-bottom: 12px;
+  }
+  
+  .info-item {
+    margin-bottom: 10px;
+    padding: 6px 0;
+  }
+  
+  .info-item label {
+    font-size: 13px;
+  }
+  
+  .info-item span {
+    font-size: 13px;
+  }
+  
+  .action-buttons {
+    gap: 8px;
   }
   
   .action-btn {
     padding: 10px 14px;
     font-size: 13px;
+    border-radius: 6px;
+    display: block !important;
+    width: 100% !important;
+    visibility: visible !important;
   }
   
   .logout-btn {
