@@ -18,7 +18,8 @@ function HomePage({
   isLoginModalOpen, 
   setIsLoginModalOpen, 
   loginError, 
-  setLoginError 
+  setLoginError, 
+  currentUser 
 }: {
   isAuthenticated: boolean;
   setIsAuthenticated: (value: boolean) => void;
@@ -26,9 +27,10 @@ function HomePage({
   setIsLoginModalOpen: (value: boolean) => void;
   loginError: string;
   setLoginError: (value: string) => void;
+  currentUser: {id: string; username: string; email: string; role?: string} | null;
 }) {
   const navigate = useNavigate();
-  const [currentUser, setCurrentUser] = useState<{id: string; username: string; email: string; role?: string} | null>(null);
+  const [currentUserState, setCurrentUserState] = useState<{id: string; username: string; email: string; role?: string} | null>(null);
   
   // List of games
   const games = [
@@ -269,7 +271,7 @@ function HomePage({
   useEffect(() => {
     const savedUser = localStorage.getItem('gamezone_currentUser');
     if (savedUser) {
-      setCurrentUser(JSON.parse(savedUser));
+      setCurrentUserState(JSON.parse(savedUser));
     }
   }, []);
 
@@ -369,7 +371,7 @@ function HomePage({
         email: 'admin',
         role: 'admin'
       };
-      setCurrentUser(adminUser);
+      setCurrentUserState(adminUser);
       localStorage.setItem('gamezone_currentUser', JSON.stringify(adminUser));
       localStorage.setItem('gamezone_isAuthenticated', 'true');
       setIsAuthenticated(true);
@@ -386,7 +388,7 @@ function HomePage({
 
   const handleLogoutFromModal = () => {
     setIsAuthenticated(false);
-    setCurrentUser(null);
+    setCurrentUserState(null);
     localStorage.removeItem('gamezone_isAuthenticated');
     localStorage.removeItem('gamezone_currentUser');
   };
@@ -459,8 +461,8 @@ function HomePage({
           onLogoClick={handleLogoClick}
           isAuthenticated={isAuthenticated}
           setIsAuthenticated={setIsAuthenticated}
-          currentUser={currentUser}
-          setCurrentUser={setCurrentUser}
+          currentUser={currentUserState}
+          setCurrentUser={setCurrentUserState}
         />
       </div>
       
@@ -573,7 +575,13 @@ function HomePage({
                 marginTop: '20px'
               }}>
                 <button
-                  onClick={() => setIsCheckoutModalOpen(true)}
+                  onClick={() => {
+                    if (!isAuthenticated || !currentUserState) {
+                      alert('Please log in or register to complete your purchase.');
+                      return;
+                    }
+                    setIsCheckoutModalOpen(true);
+                  }}
                   style={{
                     background: 'linear-gradient(135deg, #00ffff 0%, #0096ff 100%)',
                     color: '#000000',
@@ -596,7 +604,7 @@ function HomePage({
                     e.currentTarget.style.boxShadow = '0 8px 25px rgba(0, 255, 255, 0.3)';
                   }}
                 >
-                  Checkout - ${getCartGames().reduce((sum, game) => sum + game.price, 0).toFixed(2)}
+                  {!isAuthenticated || !currentUserState ? 'Login to Checkout' : `Checkout - $${getCartGames().reduce((sum, game) => sum + game.price, 0).toFixed(2)}`}
                 </button>
               </div>
             </>
@@ -718,7 +726,7 @@ function HomePage({
           title: game.title,
           price: game.price
         }))}
-        userId={currentUser?.id || 'guest-user'}
+        userId={currentUserState?.id || 'guest-user'}
         onCheckout={async (purchaseData) => {
           await handleCheckout(purchaseData);
           handleCheckoutComplete();
@@ -763,6 +771,7 @@ function App() {
               setIsLoginModalOpen={setIsLoginModalOpen} 
               loginError={loginError} 
               setLoginError={setLoginError} 
+              currentUser={isAuthenticated ? localStorage.getItem('gamezone_currentUser') ? JSON.parse(localStorage.getItem('gamezone_currentUser')!) : null : null}
             />
           } />
           <Route

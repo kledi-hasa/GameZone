@@ -1,14 +1,6 @@
 {
   "users": [
     {
-      "id": "7670",
-      "username": "sadsad",
-      "email": "asdsa",
-      "password": "dsadsaasd",
-      "role": "user",
-      "status": "active"
-    },
-    {
       "id": "39a0",
       "username": "kledi",
       "email": "kledi@gmail.com",
@@ -144,6 +136,15 @@
       "password": "sara123",
       "role": "user",
       "joinDate": "2025-06-26",
+      "status": "active"
+    },
+    {
+      "id": "yfolgja6",
+      "username": "tripzzzzzzzzzzzzzz",
+      "email": "kledi213213@gmail.com",
+      "password": "asdsad212",
+      "role": "user",
+      "joinDate": "2025-09-04",
       "status": "active"
     }
   ],

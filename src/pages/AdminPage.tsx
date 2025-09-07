@@ -567,6 +567,14 @@ const AdminPage: React.FC<{ onLogout: () => void }> = ({ onLogout }) => {
                     />
                   </div>
                   <button 
+                    onClick={handleRefreshData} 
+                    disabled={loading} 
+                    className={`${styles['header-btn']} ${styles['refresh-btn']}`}
+                    style={{ fontSize: '14px', padding: '8px 16px' }}
+                  >
+                    {loading ? '🔄 Loading...' : '🔄 Refresh Users'}
+                  </button>
+                  <button 
                     className={styles['add-btn']}
                     onClick={() => setModal({ type: 'addUser' })}
                   >

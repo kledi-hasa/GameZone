@@ -95,8 +95,29 @@ export default function Navbar({
         return;
       }
 
+      // Check for duplicate username
+      if (users.some((u: any) => u.username === formData.username)) {
+        setMessage('Username is already taken.');
+        return;
+      }
+
+      // Generate unique ID
+      const generateId = () => {
+        return Math.random().toString(36).substr(2, 8);
+      };
+      
+      let userId: string = '';
+      let isUnique = false;
+      while (!isUnique) {
+        userId = generateId();
+        isUnique = !users.some((u: any) => u.id === userId);
+      }
+
       const userData = {
-        ...formData,
+        id: userId,
+        username: formData.username,
+        email: formData.email,
+        password: formData.password,
         role: formData.username.toLowerCase() === 'admin' ? 'admin' : 'user',
         joinDate: new Date().toISOString().split('T')[0],
         status: 'active'
@@ -133,21 +154,27 @@ export default function Navbar({
 
     // Check for admin credentials first
     if (loginData.email === 'admin' && loginData.password === 'admin123') {
+      // Create admin user object that matches the database structure
       const adminUser = {
         id: 'admin',
         username: 'Admin',
         email: 'admin',
-        role: 'admin'
+        role: 'admin',
+        status: 'active',
+        joinDate: new Date().toISOString().split('T')[0]
       };
+      
       setCurrentUser(adminUser);
       setLoginMessage('Admin login successful!');
       alert('Welcome, Admin!');
       setIsAuthenticated(true);
       setLoginData({ email: '', password: '' });
       setShowLoginModal(false);
+      
       // Save to localStorage
       localStorage.setItem('gamezone_currentUser', JSON.stringify(adminUser));
       localStorage.setItem('gamezone_isAuthenticated', 'true');
+      
       // Redirect to admin dashboard
       navigate('/admin');
       return;

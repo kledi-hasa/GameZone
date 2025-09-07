@@ -68,6 +68,7 @@ interface GameContextType {
   suspendUser: (userId: string) => Promise<void>;
   banUser: (userId: string) => Promise<void>;
   activateUser: (userId: string) => Promise<void>;
+  refreshUsers: () => Promise<void>;
 
   purchases: Purchase[];
   addPurchase: (purchase: Omit<Purchase, 'id'>) => Promise<void>;
@@ -145,6 +146,16 @@ export const GameProvider: React.FC<GameProviderProps> = ({ children }) => {
     }
   };
 
+  // Function to refresh only user data
+  const refreshUsers = async () => {
+    try {
+      const usersRes = await axios.get<User[]>(`${API_URL}/users`);
+      setUsers(usersRes.data);
+    } catch (error) {
+      console.error('Error refreshing users:', error);
+    }
+  };
+
   // Fetch all data on mount
   useEffect(() => {
     fetchData();
@@ -155,11 +166,20 @@ export const GameProvider: React.FC<GameProviderProps> = ({ children }) => {
     const userPurchases = purchases.filter(p => p.userId === user.id);
     const totalPurchases = userPurchases.length;
     const totalSpent = userPurchases.reduce((sum, p) => sum + p.price, 0);
-    // For joinDate, if not present, set to first purchase date or null
-    let joinDate = user.lastLogin;
+    
+    // For joinDate, prioritize existing joinDate, then first purchase date, then current date
+    let joinDate = user.joinDate;
     if (!joinDate && userPurchases.length > 0) {
-      joinDate = userPurchases[0].purchaseDate;
+      // Sort purchases by date and get the earliest one
+      const sortedPurchases = [...userPurchases].sort((a, b) => 
+        new Date(a.purchaseDate).getTime() - new Date(b.purchaseDate).getTime()
+      );
+      joinDate = sortedPurchases[0].purchaseDate;
+    } else if (!joinDate) {
+      // If no joinDate and no purchases, set to current date
+      joinDate = new Date().toISOString().split('T')[0];
     }
+    
     return {
       ...user,
       joinDate: joinDate || '',
@@ -246,6 +266,8 @@ export const GameProvider: React.FC<GameProviderProps> = ({ children }) => {
     try {
       const res = await axios.post<User>(`${API_URL}/users`, user);
       setUsers(prev => [...prev, res.data]);
+      // Refresh data to ensure consistency
+      await fetchData();
     } catch (error) {
       console.error('Failed to add user:', error);
     }
@@ -423,7 +445,7 @@ export const GameProvider: React.FC<GameProviderProps> = ({ children }) => {
   const value: GameContextType = {
     games, addGame, editGame, deleteGame, getGameById,
     comments, addComment, deleteComment, flagComment,
-    users: usersWithStats, addUser, updateUser, deleteUser, suspendUser, banUser, activateUser,
+    users: usersWithStats, addUser, updateUser, deleteUser, suspendUser, banUser, activateUser, refreshUsers,
     purchases, addPurchase, deletePurchase, refreshData: fetchData,
     getStatistics,
     getProfitReport
