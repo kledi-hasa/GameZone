@@ -10,6 +10,7 @@ import Footer from "./components/Footer.tsx";
 import GameCarousel from './components/GameCarousel.tsx';
 import CheckoutModal from './components/CheckoutModal.tsx';
 import { GameProvider } from './context/GameContext';
+import { useGameContext } from './context/GameContext';
 import { useState, useEffect } from 'react';
 
 function HomePage({ 
@@ -18,8 +19,7 @@ function HomePage({
   isLoginModalOpen, 
   setIsLoginModalOpen, 
   loginError, 
-  setLoginError, 
-  currentUser 
+  setLoginError
 }: {
   isAuthenticated: boolean;
   setIsAuthenticated: (value: boolean) => void;
@@ -27,224 +27,12 @@ function HomePage({
   setIsLoginModalOpen: (value: boolean) => void;
   loginError: string;
   setLoginError: (value: string) => void;
-  currentUser: {id: string; username: string; email: string; role?: string} | null;
 }) {
   const navigate = useNavigate();
   const [currentUserState, setCurrentUserState] = useState<{id: string; username: string; email: string; role?: string} | null>(null);
+  const { games } = useGameContext();
   
-  // List of games
-  const games = [
-    {
-      id: 1,
-      title: "Elden Ring",
-      releaseDate: "February 25, 2022",
-      rating: 5,
-      description: "An expansive open-world action RPG where you explore the Lands Between, uncover mysteries, and face epic bosses.",
-      backgroundImage: "https://buyonline.games/wp-content/uploads/2023/07/Xbox-Series-S-Games-1.jpg",
-      price: 39.99,
-      trailerUrl: "https://www.youtube.com/watch?v=E3Huy2cdih0",
-    },
-    {
-      id: 2,
-      title: "GTA V",
-      releaseDate: "2013",
-      rating: 9,
-      description: "A sprawling open-world crime adventure set in Los Santos.",
-      backgroundImage: "https://static1.dualshockersimages.com/wordpress/wp-content/uploads/2022/05/gta-5-update-may-17.jpg",
-      price: 29.99,
-      trailerUrl: "https://www.youtube.com/watch?v=QkkoHAzjnUs",
-    },
-    {
-      id: 3,
-      title: "The Witcher 3: Wild Hunt",
-      releaseDate: "May 19, 2015",
-      rating: 10,
-      description: "A story-driven open world RPG set in a visually stunning fantasy universe full of meaningful choices and impactful consequences.",
-      backgroundImage: "https://media.rawg.io/media/games/618/618c2031a07bbff6b4f611f10b6bcdbc.jpg",
-      price: 19.99,
-      trailerUrl: "https://www.youtube.com/watch?v=XHrskkHf958",
-    },
-    {
-      id: 4,
-      title: "Red Dead Redemption 2",
-      releaseDate: "October 26, 2018",
-      rating: 10,
-      description: "An epic tale of life in America at the dawn of the modern age.",
-      backgroundImage: "https://media.rawg.io/media/games/511/5118aff5091cb3efec399c808f8c598f.jpg",
-      price: 34.99,
-      trailerUrl: "https://www.youtube.com/watch?v=gmA-BOIVKQU",
-    },
-    {
-      id: 5,
-      title: "Cyberpunk 2077",
-      releaseDate: "December 10, 2020",
-      rating: 8,
-      description: "An open-world, action-adventure story set in Night City, a megalopolis obsessed with power, glamour and body modification.",
-      backgroundImage: "https://www.cyberpunk.net/build/images/social-thumbnail-en-ddcf4d23.jpg",
-      price: 24.99,
-      trailerUrl: "https://www.youtube.com/watch?v=8X2kIfS6fb8",
-    },
-    {
-      id: 6,
-      title: "Minecraft",
-      releaseDate: "November 18, 2011",
-      rating: 9,
-      description: "A game about placing blocks and going on adventures.",
-      backgroundImage: "https://media.rawg.io/media/games/198/1988a337305e008b41d7f536ce9b73f6.jpg",
-      price: 26.95,
-      trailerUrl: "https://www.youtube.com/watch?v=MmB9b5nj_Vb",
-    },
-    {
-      id: 7,
-      title: "Fortnite",
-      releaseDate: "July 21, 2017",
-      rating: 7,
-      description: "A free-to-play battle royale game with numerous game modes for every type of game player.",
-      backgroundImage: "https://cdn2.unrealengine.com/keyart-overscan-nologo-2-2276x1280-aa06338f9aae.jpg",
-      price: 50.5,
-      trailerUrl: "https://www.youtube.com/watch?v=2gUtfBmw86Y",
-    },
-    {
-      id: 8,
-      title: "Call of Duty: Modern Warfare",
-      releaseDate: "October 25, 2019",
-      rating: 8,
-      description: "A gritty, dramatic single-player campaign and classic multiplayer modes.",
-      backgroundImage: "https://images.ctfassets.net/vfkpgemp7ek3/1240004181/8b1fdb1ab8330de77e0f8ecf1f5757c1/call-of-duty-mobile-hero-a.jpg",
-      price: 59.99,
-      trailerUrl: "https://www.youtube.com/watch?v=bH1lHCirCGI",
-    },
-    {
-      id: 9,
-      title: "Overwatch",
-      releaseDate: "May 24, 2016",
-      rating: 9,
-      description: "A vibrant team-based shooter set on a near-future earth.",
-      backgroundImage: "https://th.bing.com/th/id/R.8ddaa1c3a73e1ad4354cc4d31577d21c?rik=Gj9Rh3u%2fyyzy2A&pid=ImgRaw&r=0",
-      price: 39.99,
-      trailerUrl: "https://www.youtube.com/watch?v=FqnKB22pOC0",
-    },
-    {
-      id: 10,
-      title: "League of Legends",
-      releaseDate: "October 27, 2009",
-      rating: 8,
-      description: "A fast-paced, competitive online game that blends the speed and intensity of an RTS with RPG elements.",
-      backgroundImage: "https://www.talkesport.com/wp-content/uploads/league-of-legends.webp",
-      price: 65.4,
-      trailerUrl: "https://www.youtube.com/watch?v=BGtROJeMPeE",
-    },
-    {
-      id: 11,
-      title: "Valorant",
-      releaseDate: "June 2, 2020",
-      rating: 8,
-      description: "A 5v5 character-based tactical shooter.",
-      backgroundImage: "https://media.rawg.io/media/games/456/456dea5e1c7e3cd07060c14e96612001.jpg",
-      price: 70.5,
-      trailerUrl: "https://www.youtube.com/watch?v=lWr6dhTcu-E",
-    },
-    {
-      id: 12,
-      title: "Apex Legends",
-      releaseDate: "February 4, 2019",
-      rating: 8,
-      description: "A free-to-play Battle Royale game where legendary competitors battle for glory, fame, and fortune on the fringes of the Frontier.",
-      backgroundImage: "https://bleedingcool.com/wp-content/uploads/2024/05/Apex-Legends-Upheaval-Art-2-2000x1125.jpg",
-      price: 80.2,
-      trailerUrl: "https://www.youtube.com/watch?v=innmNewjkuk",
-    },
-    {
-      id: 13,
-      title: "Assassin's Creed Valhalla",
-      releaseDate: "November 10, 2020",
-      rating: 8,
-      description: "Become Eivor, a legendary Viking raider on a quest for glory.",
-      backgroundImage: "https://media.rawg.io/media/games/618/618c2031a07bbff6b4f611f10b6bcdbc.jpg",
-      price: 49.99,
-      trailerUrl: "https://www.youtube.com/watch?v=ssrNcwxALS4",
-    },
-    {
-      id: 14,
-      title: "FIFA 23",
-      releaseDate: "September 30, 2022",
-      rating: 7,
-      description: "The world's game comes to life with new ways to play and new competitions.",
-      backgroundImage: "https://cdn.mos.cms.futurecdn.net/67hnqFzV58p8A3dHavqU8N.jpg",
-      price: 59.99,
-      trailerUrl: "https://www.youtube.com/watch?v=o3V-GvvzjE4",
-    },
-    {
-      id: 15,
-      title: "Horizon Zero Dawn",
-      releaseDate: "February 28, 2017",
-      rating: 9,
-      description: "An exhilarating action role playing game developed by the award winning Guerrilla Games.",
-      backgroundImage: "https://th.bing.com/th/id/R.84654eb36a8bc173944105cc8332c2a0?rik=s%2fWqw93qWl1nqA&riu=http%3a%2f%2fimages.pushsquare.com%2fscreenshots%2f68777%2flarge.jpg&ehk=88%2b8aRO9erCuRLDh8mlgnv338Z4402i4sTluUJikQGE%3d&risl=&pid=ImgRaw&r=0",
-      price: 19.99,
-      trailerUrl: "https://www.youtube.com/watch?v=u4-FCsiF5x4",
-    },
-    {
-      id: 16,
-      title: "DOOM Eternal",
-      releaseDate: "March 20, 2020",
-      rating: 9,
-      description: "The ultimate combination of speed and power with the next leap in push-forward, first-person combat.",
-      backgroundImage: "https://media.rawg.io/media/games/198/1988a337305e008b41d7f536ce9b73f6.jpg",
-      price: 39.99,
-      trailerUrl: "https://www.youtube.com/watch?v=FkklG9MA0vM",
-    },
-    {
-      id: 17,
-      title: "Sekiro: Shadows Die Twice",
-      releaseDate: "March 22, 2019",
-      rating: 9,
-      description: "A shinobi must take revenge on his enemies in late 1500s Sengoku Japan.",
-      backgroundImage: "https://th.bing.com/th/id/OIP.bk5I3DdP_jCJ7BFgDY3jewHaFI?r=0&rs=1&pid=ImgDetMain",
-      price: 29.99,
-      trailerUrl: "https://www.youtube.com/watch?v=rXMX4YJ7Lks",
-    },
-    {
-      id: 18,
-      title: "Among Us",
-      releaseDate: "June 15, 2018",
-      rating: 8,
-      description: "An online and local party game of teamwork and betrayal for 4-15 players.",
-      backgroundImage: "https://th.bing.com/th/id/R.c482e0fe378a66bdcb3de7b1373b829c?rik=%2fWP3TtRt4ryvhg&pid=ImgRaw&r=0",
-      price: 4.99,
-      trailerUrl: "https://www.youtube.com/watch?v=NSJ4cESNQfE",
-    },
-    {
-      id: 19,
-      title: "Stardew Valley",
-      releaseDate: "February 26, 2016",
-      rating: 10,
-      description: "You've inherited your grandfather's old farm plot in Stardew Valley.",
-      backgroundImage: "https://www.pockettactics.com/wp-content/sites/pockettactics/2023/07/stardew-valley-switch-review.jpg",
-      price: 14.99,
-      trailerUrl: "https://www.youtube.com/watch?v=ot7uXNQskhs",
-    },
-    {
-      id: 20,
-      title: "Terraria",
-      releaseDate: "May 16, 2011",
-      rating: 9,
-      description: "Dig, fight, explore, build! Nothing is impossible in this action-packed adventure game.",
-      backgroundImage: "https://media.rawg.io/media/games/456/456dea5e1c7e3cd07060c14e96612001.jpg",
-      price: 9.99,
-      trailerUrl: "https://www.youtube.com/watch?v=H77Zfzy4LWw",
-    },
-    {
-      id: 21,
-      title: "The Legend of Zelda: Breath of the Wild",
-      releaseDate: "March 3, 2017",
-      rating: 10,
-      description: "Step into a world of discovery, exploration and adventure in The Legend of Zelda: Breath of the Wild.",
-      backgroundImage: "https://gamelegends.it/wp-content/uploads/2023/05/zelda-games-1.jpg",
-      price: 59.99,
-      trailerUrl: "https://www.youtube.com/watch?v=zw47_q9wBEg",
-    },
-  ];
+  // Games now come from GameContext (database-backed)
 
   // State management with localStorage persistence
   const [searchQuery, setSearchQuery] = useState('');
@@ -266,6 +54,7 @@ function HomePage({
   const [isVideoModalOpen, setIsVideoModalOpen] = useState(false);
   const [selectedVideo, setSelectedVideo] = useState<{ url: string; title: string } | null>(null);
   const [isCheckoutModalOpen, setIsCheckoutModalOpen] = useState(false);
+  const [showScrollTop, setShowScrollTop] = useState(false);
 
   // Load current user from localStorage on component mount
   useEffect(() => {
@@ -290,6 +79,15 @@ function HomePage({
     console.log('App render - VideoModal state:', { isVideoModalOpen, selectedVideo });
   }, [isVideoModalOpen, selectedVideo]);
 
+  // Show scroll-to-top button after scrolling down
+  useEffect(() => {
+    const onScroll = () => {
+      setShowScrollTop(window.scrollY > 300);
+    };
+    window.addEventListener('scroll', onScroll);
+    return () => window.removeEventListener('scroll', onScroll);
+  }, []);
+
   // Filter games based on search query
   const filteredGames = games.filter(game =>
     game.title.toLowerCase().includes(searchQuery.toLowerCase())
@@ -301,11 +99,7 @@ function HomePage({
     setShowCart(false);
   };
 
-  const handleClearSearch = () => {
-    setSearchQuery('');
-    setShowFavorites(false);
-    setShowCart(false);
-  };
+  // Removed handleClearSearch; input clears in Navbar after search
 
   const handleShowFavorites = () => {
     setShowFavorites(true);
@@ -453,7 +247,6 @@ function HomePage({
       <div>
         <Navbar 
           onSearch={handleSearch} 
-          onClearSearch={handleClearSearch} 
           onShowFavorites={handleShowFavorites} 
           onShowCart={handleShowCart}
           favoritesCount={favorites.length}
@@ -513,7 +306,7 @@ function HomePage({
               trailerUrl={game.trailerUrl}
               isFavorited={favorites.includes(game.title)}
               isInCart={cart.includes(game.title)}
-              onPlayTrailer={() => handlePlayTrailer(game.trailerUrl, game.title)}
+              onPlayTrailer={() => game.trailerUrl && handlePlayTrailer(game.trailerUrl, game.title)}
               onAddToFavorites={() => handleAddToFavorites(game.title)}
               onAddToCart={() => handleAddToCart(game.title)}
               onAddReview={() => handleAddReview(game.title)}
@@ -561,7 +354,7 @@ function HomePage({
                   trailerUrl={game.trailerUrl}
                   isFavorited={favorites.includes(game.title)}
                   isInCart={cart.includes(game.title)}
-                  onPlayTrailer={() => handlePlayTrailer(game.trailerUrl, game.title)}
+                  onPlayTrailer={() => game.trailerUrl && handlePlayTrailer(game.trailerUrl, game.title)}
                   onAddToFavorites={() => handleAddToFavorites(game.title)}
                   onAddToCart={() => handleAddToCart(game.title)}
                   onAddReview={() => handleAddReview(game.title)}
@@ -647,7 +440,7 @@ function HomePage({
             trailerUrl={game.trailerUrl}
             isFavorited={favorites.includes(game.title)}
             isInCart={cart.includes(game.title)}
-            onPlayTrailer={() => handlePlayTrailer(game.trailerUrl, game.title)}
+            onPlayTrailer={() => game.trailerUrl && handlePlayTrailer(game.trailerUrl, game.title)}
             onAddToFavorites={() => handleAddToFavorites(game.title)}
             onAddToCart={() => handleAddToCart(game.title)}
             onAddReview={() => handleAddReview(game.title)}
@@ -691,7 +484,7 @@ function HomePage({
             trailerUrl={game.trailerUrl}
             isFavorited={favorites.includes(game.title)}
             isInCart={cart.includes(game.title)}
-            onPlayTrailer={() => handlePlayTrailer(game.trailerUrl, game.title)}
+            onPlayTrailer={() => game.trailerUrl && handlePlayTrailer(game.trailerUrl, game.title)}
             onAddToFavorites={() => handleAddToFavorites(game.title)}
             onAddToCart={() => handleAddToCart(game.title)}
             onAddReview={() => handleAddReview(game.title)}
@@ -733,6 +526,17 @@ function HomePage({
         }}
       />
 
+      {showScrollTop && (
+        <button
+          className="scroll-top-btn"
+          onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+          aria-label="Scroll to top"
+          title="Back to top"
+        >
+          ↑
+        </button>
+      )}
+
     </div>
   );
 }
@@ -770,8 +574,7 @@ function App() {
               isLoginModalOpen={isLoginModalOpen} 
               setIsLoginModalOpen={setIsLoginModalOpen} 
               loginError={loginError} 
-              setLoginError={setLoginError} 
-              currentUser={isAuthenticated ? localStorage.getItem('gamezone_currentUser') ? JSON.parse(localStorage.getItem('gamezone_currentUser')!) : null : null}
+              setLoginError={setLoginError}
             />
           } />
           <Route

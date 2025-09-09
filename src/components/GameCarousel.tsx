@@ -5,7 +5,7 @@ import 'swiper/swiper-bundle.css';
 import styles from './GameCarousel.module.css';
 
 interface Game {
-  id: number;
+  id: string;
   title: string;
   releaseDate: string;
   rating: number;

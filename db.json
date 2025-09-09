@@ -1,15 +1,6 @@
 {
   "users": [
     {
-      "id": "39a0",
-      "username": "kledi",
-      "email": "kledi@gmail.com",
-      "password": "kledi123",
-      "role": "user",
-      "status": "active",
-      "joinDate": "2025-06-29"
-    },
-    {
       "id": "a1af",
       "username": "kledi",
       "email": "kledia@gmail.com",
@@ -66,14 +57,6 @@
       "status": "active"
     },
     {
-      "id": "ba82",
-      "username": "dadasd",
-      "email": "0694072493",
-      "password": "dasdas",
-      "role": "user",
-      "status": "active"
-    },
-    {
       "id": "2c34",
       "username": "dasdasd",
       "email": "hasakledi25@gmail.com",
@@ -94,22 +77,6 @@
       "username": "asdsadsadasdasdsadasdas",
       "email": "hasakledi25@gmail.com",
       "password": "sdadasd",
-      "role": "user",
-      "status": "active"
-    },
-    {
-      "id": "73ab",
-      "username": "Aurela",
-      "email": "ela11gjoka@gmail.com",
-      "password": "asdsadsad",
-      "role": "user",
-      "status": "active"
-    },
-    {
-      "id": "3764",
-      "username": "tripzzzzzzz",
-      "email": "tripzzz@gmail.com",
-      "password": "Tripzzzz",
       "role": "user",
       "status": "active"
     },
@@ -145,6 +112,42 @@
       "password": "asdsad212",
       "role": "user",
       "joinDate": "2025-09-04",
+      "status": "active"
+    },
+    {
+      "id": "142y9nsv",
+      "username": "kledi213",
+      "email": "kledi213@gmail.com",
+      "password": "kledi213",
+      "role": "user",
+      "joinDate": "2025-09-09",
+      "status": "active"
+    },
+    {
+      "id": "sjtcoyto",
+      "username": "kledi1234",
+      "email": "kledi1234@gmail.com",
+      "password": "kledi1234",
+      "role": "user",
+      "joinDate": "2025-09-09",
+      "status": "active"
+    },
+    {
+      "id": "ow73taoh",
+      "username": "kledi321",
+      "email": "kledi321@gmail.com",
+      "password": "kledi321",
+      "role": "user",
+      "joinDate": "2025-09-09",
+      "status": "active"
+    },
+    {
+      "id": "7ogj81q8",
+      "username": "kledi21",
+      "email": "kledi21@gmail.com",
+      "password": "kledi123",
+      "role": "user",
+      "joinDate": "2025-09-09",
       "status": "active"
     }
   ],
@@ -215,7 +218,7 @@
       "releaseDate": "November 18, 2011",
       "rating": 9,
       "description": "A game about placing blocks and going on adventures.",
-      "backgroundImage": "https://media.rawg.io/media/games/198/1988a337305e008b41d7f536ce9b73f6.jpg",
+      "backgroundImage": "https://upload.wikimedia.org/wikipedia/en/b/b6/Minecraft_2024_cover_art.png",
       "price": 26.95,
       "cost": 15,
       "quantity": 10,
@@ -275,7 +278,7 @@
       "releaseDate": "June 2, 2020",
       "rating": 8,
       "description": "A 5v5 character-based tactical shooter.",
-      "backgroundImage": "https://media.rawg.io/media/games/456/456dea5e1c7e3cd07060c14e96612001.jpg",
+      "backgroundImage": "https://variety.com/wp-content/uploads/2024/08/Valorant_a27b53.png?w=1000&h=667&crop=1&resize=1000%2C667",
       "price": 70.5,
       "cost": 50,
       "quantity": 1,
@@ -316,18 +319,6 @@
       "cost": 35,
       "quantity": 2,
       "trailerUrl": "https://www.youtube.com/watch?v=o3V-GvvzjE4"
-    },
-    {
-      "id": "15",
-      "title": "Horizon Zero Dawn",
-      "releaseDate": "February 28, 2017",
-      "rating": 9,
-      "description": "An exhilarating action role playing game developed by the award winning Guerrilla Games.",
-      "backgroundImage": "https://th.bing.com/th/id/R.84654eb36a8bc173944105cc8332c2a0?rik=s%2fWqw93qWl1nqA&riu=http%3a%2f%2fimages.pushsquare.com%2fscreenshots%2f68777%2flarge.jpg&ehk=88%2b8aRO9erCuRLDh8mlgnv338Z4402i4sTluUJikQGE%3d&risl=&pid=ImgRaw&r=0",
-      "price": 19.99,
-      "cost": 8,
-      "quantity": 5,
-      "trailerUrl": "https://www.youtube.com/watch?v=u4-FCsiF5x4"
     },
     {
       "id": "16",
@@ -383,8 +374,8 @@
       "releaseDate": "May 16, 2011",
       "rating": 9,
       "description": "Dig, fight, explore, build! Nothing is impossible in this action-packed adventure game.",
-      "backgroundImage": "https://media.rawg.io/media/games/456/456dea5e1c7e3cd07060c14e96612001.jpg",
-      "price": 9.99,
+      "backgroundImage": "https://upload.wikimedia.org/wikipedia/en/1/1a/Terraria_Steam_artwork.jpg",
+      "price": 9.98,
       "cost": 3,
       "quantity": 8,
       "trailerUrl": "https://www.youtube.com/watch?v=H77Zfzy4LWw"
@@ -395,53 +386,23 @@
       "releaseDate": "March 3, 2017",
       "rating": 10,
       "description": "Step into a world of discovery, exploration and adventure in The Legend of Zelda: Breath of the Wild.",
-      "backgroundImage": "https://gamelegends.it/wp-content/uploads/2023/05/zelda-games-1.jpg",
+      "backgroundImage": "https://upload.wikimedia.org/wikipedia/en/c/c6/The_Legend_of_Zelda_Breath_of_the_Wild.jpg",
       "price": 59.99,
       "cost": 40,
       "quantity": 2,
       "trailerUrl": "https://www.youtube.com/watch?v=zw47_q9wBEg"
     }
   ],
-  "comments": [
-    {
-      "id": "1",
-      "gameId": "1",
-      "username": "gamer123",
-      "content": "Amazing game! Love the graphics and story.",
-      "date": "2024-01-15",
-      "rating": 5,
-      "helpful": 12,
-      "verified": true
-    },
-    {
-      "id": "3",
-      "gameId": "2",
-      "username": "witcherfan",
-      "content": "Best RPG I've ever played!",
-      "date": "2024-01-17",
-      "rating": 5,
-      "helpful": 8,
-      "verified": true
-    }
-  ],
+  "comments": [],
   "purchases": [
     {
-      "id": "pyiorb00nz",
-      "userId": "39a0",
-      "gameId": "1",
-      "price": 39.99,
-      "purchaseDate": "2025-06-29",
-      "paymentMethod": "Card ending in 4121",
-      "transactionKey": "TXN1s2m6mep0"
-    },
-    {
-      "id": "p8ygc3ew9g",
-      "userId": "39a0",
+      "id": "pumcgsf4ja",
+      "userId": "ow73taoh",
       "gameId": "2",
       "price": 29.99,
-      "purchaseDate": "2025-06-29",
-      "paymentMethod": "Card ending in 4121",
-      "transactionKey": "TXN3dlhrx3p7"
+      "purchaseDate": "2025-09-09",
+      "paymentMethod": "Card ending in 3212",
+      "transactionKey": "TXNqkmxw1lgu"
     }
   ]
 }

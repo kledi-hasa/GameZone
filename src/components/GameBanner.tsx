@@ -31,7 +31,8 @@ const GameBanner: React.FC<GameBannerProps> = ({
   price,
   gameId = "1",
   onAddToFavorites,
-  onAddToCart}) => {
+  onAddToCart,
+}) => {
   const [isHeartFilled, setIsHeartFilled] = useState(isFavorited);
   const [showDetailedCard, setShowDetailedCard] = useState(false);
   const [showReviewModal, setShowReviewModal] = useState(false);
@@ -75,7 +76,7 @@ const GameBanner: React.FC<GameBannerProps> = ({
 
   const handleCardClick = (e: React.MouseEvent) => {
     // Don't trigger card click if clicking on buttons
-    if ((e.target as HTMLElement).closest('button')) {
+    if ((e.target as HTMLElement).closest("button")) {
       return;
     }
     setShowDetailedCard(true);
@@ -104,17 +105,17 @@ const GameBanner: React.FC<GameBannerProps> = ({
   const extendedDescription = `${description} This game offers an immersive experience with stunning graphics, engaging gameplay mechanics, and a compelling storyline that will keep you entertained for hours. Whether you're a casual gamer or a hardcore enthusiast, this title delivers exceptional value and entertainment.`;
 
   // Sample tags/categories
-  const gameTags = ['Action', 'Adventure', 'RPG', 'Open World'];
+  const gameTags = ["Action", "Adventure", "RPG", "Open World"];
 
   // Sample system requirements
   const systemRequirements = {
     minimum: {
-      os: 'Windows 10 64-bit',
-      processor: 'Intel Core i5-4460',
-      memory: '8 GB RAM',
-      graphics: 'NVIDIA GTX 760',
-      storage: '50 GB'
-    }
+      os: "Windows 10 64-bit",
+      processor: "Intel Core i5-4460",
+      memory: "8 GB RAM",
+      graphics: "NVIDIA GTX 760",
+      storage: "50 GB",
+    },
   };
 
   return (
@@ -135,12 +136,14 @@ const GameBanner: React.FC<GameBannerProps> = ({
           <div className="price-tag">${price}</div>
           <div className={`${styles.buttons} button-group`}>
             {onPlayTrailer && (
-              <button 
-                className="trailer-button" 
+              <button
+                className="trailer-button"
                 onClick={(e) => {
                   e.stopPropagation();
-                  console.log('Trailer button clicked in GameBanner');
-                  console.log('Trailer button clicked in GameBanner - calling onPlayTrailer');
+                  console.log("Trailer button clicked in GameBanner");
+                  console.log(
+                    "Trailer button clicked in GameBanner - calling onPlayTrailer"
+                  );
                   onPlayTrailer();
                 }}
               >
@@ -148,26 +151,28 @@ const GameBanner: React.FC<GameBannerProps> = ({
               </button>
             )}
             {onAddToCart && (
-              <button 
-                className={`buy-button ${isInCart ? styles.inCart : ''}`} 
+              <button
+                className={`buy-button ${isInCart ? styles.inCart : ""}`}
                 onClick={(e) => handleButtonClick(e, onAddToCart)}
               >
-                {isInCart ? 'In Cart' : 'Buy'}
+                {isInCart ? "In Cart" : "Buy"}
               </button>
             )}
-            <button 
-              className="secondary-button" 
+            <button
+              className="secondary-button"
               onClick={(e) => handleButtonClick(e, handleReviewClick)}
             >
               Review
             </button>
             {onAddToFavorites && (
-              <button 
-                className={`${styles.heartButton} ${isHeartFilled ? styles.filled : ''}`}
+              <button
+                className={`${styles.heartButton} ${
+                  isHeartFilled ? styles.filled : ""
+                }`}
                 onClick={(e) => handleButtonClick(e, handleHeartClick)}
                 aria-label="Add to favorites"
               >
-                {isHeartFilled ? '❤️' : '♡'}
+                {isHeartFilled ? "❤️" : "♡"}
               </button>
             )}
           </div>
@@ -176,8 +181,14 @@ const GameBanner: React.FC<GameBannerProps> = ({
 
       {/* Detailed Click Card */}
       {showDetailedCard && (
-        <div className={styles.detailedCardOverlay} onClick={handleCloseDetailedCard}>
-          <div className={styles.detailedCard} onClick={(e) => e.stopPropagation()}>
+        <div
+          className={styles.detailedCardOverlay}
+          onClick={handleCloseDetailedCard}
+        >
+          <div
+            className={styles.detailedCard}
+            onClick={(e) => e.stopPropagation()}
+          >
             <div className={styles.detailedCardContent}>
               <div className={styles.detailedHeader}>
                 <div className={styles.detailedImage}>
@@ -186,17 +197,26 @@ const GameBanner: React.FC<GameBannerProps> = ({
                 <div className={styles.detailedInfo}>
                   <h2 className={styles.detailedTitle}>{title}</h2>
                   <div className={styles.detailedMeta}>
-                    <span className={styles.detailedReleaseDate}>Released: {releaseDate}</span>
+                    <span className={styles.detailedReleaseDate}>
+                      Released: {releaseDate}
+                    </span>
                     <div className={styles.detailedRating}>
-                      <span className={styles.detailedStars}>{renderStars()}</span>
-                      <span className={styles.detailedRatingText}>({rating}/5)</span>
+                      <span className={styles.detailedStars}>
+                        {renderStars()}
+                      </span>
+                      <span className={styles.detailedRatingText}>
+                        ({rating}/5)
+                      </span>
                     </div>
                   </div>
                   <div className={styles.detailedPrice}>
                     <span className={styles.detailedPriceTag}>${price}</span>
                   </div>
                 </div>
-                <button className={styles.closeButton} onClick={handleCloseDetailedCard}>
+                <button
+                  className={styles.closeButton}
+                  onClick={handleCloseDetailedCard}
+                >
                   ×
                 </button>
               </div>
@@ -210,7 +230,9 @@ const GameBanner: React.FC<GameBannerProps> = ({
                 <h3>Categories</h3>
                 <div className={styles.tagsList}>
                   {gameTags.map((tag, index) => (
-                    <span key={index} className={styles.tag}>{tag}</span>
+                    <span key={index} className={styles.tag}>
+                      {tag}
+                    </span>
                   ))}
                 </div>
               </div>
@@ -222,26 +244,29 @@ const GameBanner: React.FC<GameBannerProps> = ({
                     <strong>OS:</strong> {systemRequirements.minimum.os}
                   </div>
                   <div className={styles.requirementItem}>
-                    <strong>Processor:</strong> {systemRequirements.minimum.processor}
+                    <strong>Processor:</strong>{" "}
+                    {systemRequirements.minimum.processor}
                   </div>
                   <div className={styles.requirementItem}>
                     <strong>Memory:</strong> {systemRequirements.minimum.memory}
                   </div>
                   <div className={styles.requirementItem}>
-                    <strong>Graphics:</strong> {systemRequirements.minimum.graphics}
+                    <strong>Graphics:</strong>{" "}
+                    {systemRequirements.minimum.graphics}
                   </div>
                   <div className={styles.requirementItem}>
-                    <strong>Storage:</strong> {systemRequirements.minimum.storage}
+                    <strong>Storage:</strong>{" "}
+                    {systemRequirements.minimum.storage}
                   </div>
                 </div>
               </div>
 
               <div className={styles.detailedActions}>
                 {onPlayTrailer && (
-                  <button 
+                  <button
                     className={styles.detailedTrailerButton}
                     onClick={() => {
-                      console.log('Trailer button clicked in detailed card');
+                      console.log("Trailer button clicked in detailed card");
                       onPlayTrailer();
                     }}
                   >
@@ -249,26 +274,30 @@ const GameBanner: React.FC<GameBannerProps> = ({
                   </button>
                 )}
                 {onAddToCart && (
-                  <button 
-                    className={`${styles.detailedBuyButton} ${isInCart ? styles.inCart : ''}`}
+                  <button
+                    className={`${styles.detailedBuyButton} ${
+                      isInCart ? styles.inCart : ""
+                    }`}
                     onClick={onAddToCart}
                   >
-                    {isInCart ? 'In Cart' : 'Add to Cart'}
+                    {isInCart ? "In Cart" : "Add to Cart"}
                   </button>
                 )}
-                <button 
+                <button
                   className={styles.detailedReviewButton}
                   onClick={handleReviewClick}
                 >
                   Read Reviews
                 </button>
                 {onAddToFavorites && (
-                  <button 
-                    className={`${styles.detailedHeartButton} ${isHeartFilled ? styles.filled : ''}`}
+                  <button
+                    className={`${styles.detailedHeartButton} ${
+                      isHeartFilled ? styles.filled : ""
+                    }`}
                     onClick={handleHeartClick}
                     aria-label="Add to favorites"
                   >
-                    {isHeartFilled ? '❤️' : '♡'}
+                    {isHeartFilled ? "❤️" : "♡"}
                   </button>
                 )}
               </div>

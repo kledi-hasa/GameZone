@@ -706,6 +706,36 @@
   justify-items: start;
 }
 
+/* Scroll-to-top button */
+.scroll-top-btn {
+  position: fixed;
+  right: 16px;
+  bottom: 16px;
+  z-index: 1500;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  background: rgba(0, 0, 0, 0.5);
+  color: white;
+  font-size: 20px;
+  line-height: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  backdrop-filter: blur(6px);
+  box-shadow: 0 8px 20px rgba(0,0,0,0.3);
+}
+
+.scroll-top-btn:hover {
+  background: rgba(0, 0, 0, 0.7);
+}
+
+.scroll-top-btn:active {
+  transform: translateY(1px);
+}
+
 /* Ensure empty states take full grid height */
 .game-grid:has(.empty-state) {
   align-content: stretch;
@@ -1034,6 +1064,17 @@
     min-height: 44px;
     min-width: 44px;
   }
+}
+
+/* Force white text and placeholder in custom modal inputs */
+.custom-modal-content .form-control {
+  color: #ffffff !important;
+  background-color: rgba(255, 255, 255, 0.1) !important;
+  border: 1px solid rgba(255, 255, 255, 0.2) !important;
+}
+
+.custom-modal-content .form-control::placeholder {
+  color: rgba(255, 255, 255, 0.75) !important;
 }
 
 /* Modal styles - Complete override of Bootstrap defaults */

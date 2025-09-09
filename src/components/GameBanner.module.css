@@ -36,7 +36,12 @@
 .overlay {
   position: absolute;
   inset: 0;
-  background: linear-gradient(to top, rgba(0, 0, 0, 0.9) 0%, rgba(0, 0, 0, 0.7) 50%, rgba(0, 0, 0, 0.3) 100%);
+  background: linear-gradient(
+    to top,
+    rgba(0, 0, 0, 0.9) 0%,
+    rgba(0, 0, 0, 0.7) 50%,
+    rgba(0, 0, 0, 0.3) 100%
+  );
   z-index: 0;
 }
 
@@ -156,9 +161,15 @@
 }
 
 @keyframes heartBeat {
-  0% { transform: scale(1); }
-  50% { transform: scale(1.2); }
-  100% { transform: scale(1); }
+  0% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.2);
+  }
+  100% {
+    transform: scale(1);
+  }
 }
 
 .inCart {
@@ -237,9 +248,12 @@
 
 .detailedHeader {
   display: flex;
+  flex-direction: column;
+  align-items: center;
   gap: 1.5rem;
   margin-bottom: 2rem;
   position: relative;
+  text-align: center;
 }
 
 .detailedImage {
@@ -258,7 +272,8 @@
 }
 
 .detailedInfo {
-  flex: 1;
+  width: 100%;
+  text-align: center;
 }
 
 .detailedTitle {
@@ -273,6 +288,7 @@
 .detailedMeta {
   display: flex;
   flex-direction: column;
+  align-items: center;
   gap: 0.8rem;
   margin-bottom: 1.5rem;
 }
@@ -291,6 +307,7 @@
 .detailedRating {
   display: flex;
   align-items: center;
+  justify-content: center;
   gap: 0.8rem;
 }
 
@@ -307,6 +324,7 @@
 
 .detailedPrice {
   margin-bottom: 1.5rem;
+  text-align: center;
 }
 
 .detailedPriceTag {
@@ -318,7 +336,7 @@
   padding: 0.8rem 1.5rem;
   border-radius: 15px;
   border: 2px solid rgba(0, 255, 136, 0.3);
-  display: inline-block;
+  display: inline-flex;
 }
 
 .closeButton {
@@ -540,9 +558,15 @@
 }
 
 @keyframes pulse {
-  0% { transform: scale(1); }
-  50% { transform: scale(1.05); }
-  100% { transform: scale(1); }
+  0% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.05);
+  }
+  100% {
+    transform: scale(1);
+  }
 }
 
 /* Responsive Design for Detailed Card */
@@ -551,40 +575,40 @@
     width: 95%;
     max-height: 95vh;
   }
-  
+
   .detailedCardContent {
     padding: 1.5rem;
   }
-  
+
   .detailedHeader {
     flex-direction: column;
     align-items: center;
     text-align: center;
     gap: 1rem;
   }
-  
+
   .detailedImage {
     width: 100%;
     height: 150px;
   }
-  
+
   .detailedTitle {
     font-size: 1.5rem;
   }
-  
+
   .detailedPriceTag {
     font-size: 1.8rem;
   }
-  
+
   .requirementsList {
     grid-template-columns: 1fr;
   }
-  
+
   .detailedActions {
     flex-direction: column;
     gap: 0.8rem;
   }
-  
+
   .detailedTrailerButton,
   .detailedBuyButton {
     width: 100%;
@@ -597,24 +621,24 @@
     width: 98%;
     margin: 1rem;
   }
-  
+
   .detailedCardContent {
     padding: 1rem;
   }
-  
+
   .detailedTitle {
     font-size: 1.3rem;
   }
-  
+
   .detailedPriceTag {
     font-size: 1.5rem;
   }
-  
+
   .detailedDescription p {
     font-size: 0.9rem;
     padding: 1rem;
   }
-  
+
   .closeButton {
     top: -5px;
     right: -5px;

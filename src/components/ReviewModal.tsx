@@ -18,6 +18,7 @@ const ReviewModal: React.FC<ReviewModalProps> = ({
   gameId
 }) => {
   const { comments, addComment } = useGameContext();
+  const [authUser, setAuthUser] = React.useState<{ id: string; username: string } | null>(null);
 
   // Manage scroll position when modal opens
   useEffect(() => {
@@ -35,6 +36,26 @@ const ReviewModal: React.FC<ReviewModalProps> = ({
     return () => {
       document.body.style.overflow = 'unset';
     };
+  }, [isOpen]);
+
+  // Load authenticated user from localStorage
+  useEffect(() => {
+    try {
+      const isAuth = localStorage.getItem('gamezone_isAuthenticated') === 'true';
+      const savedUser = localStorage.getItem('gamezone_currentUser');
+      if (isAuth && savedUser) {
+        const parsed = JSON.parse(savedUser);
+        if (parsed?.id && parsed?.username) {
+          setAuthUser({ id: parsed.id, username: parsed.username });
+        } else {
+          setAuthUser(null);
+        }
+      } else {
+        setAuthUser(null);
+      }
+    } catch {
+      setAuthUser(null);
+    }
   }, [isOpen]);
 
   // Filter comments for this game
@@ -74,7 +95,11 @@ const ReviewModal: React.FC<ReviewModalProps> = ({
     ? reviews.filter(review => review.rating === selectedRating)
     : reviews;
 
-  const handleSubmitReview = () => {
+  const handleSubmitReview = async () => {
+    if (!authUser) {
+      alert('Please log in to submit a review.');
+      return;
+    }
     if (userRating === 0) {
       alert('Please select a rating');
       return;
@@ -83,19 +108,32 @@ const ReviewModal: React.FC<ReviewModalProps> = ({
       alert('Please write a review comment');
       return;
     }
-    if (userName.trim() === '') {
-      alert('Please enter your name');
-      return;
+    const confirmMsg = `Submit review for ${gameTitle}?\n\n` +
+      `Name: ${authUser.username}\n` +
+      `Rating: ${userRating}/5\n` +
+      `Comment: ${userComment.substring(0, 120)}${userComment.length > 120 ? '…' : ''}`;
+    const confirmed = window.confirm(confirmMsg);
+    if (!confirmed) return;
+
+    try {
+      await addComment({
+        gameId,
+        username: authUser.username,
+        content: userComment.trim(),
+        isInappropriate: false,
+        userId: authUser.id,
+        rating: userRating
+      });
+      alert('Your review was submitted successfully and is now visible.');
+      // Reset form and close modal
+      setUserName('');
+      setUserRating(0);
+      setUserComment('');
+      setShowAddReview(false);
+      onClose();
+    } catch (e) {
+      alert('Failed to submit review. Please try again.');
     }
-    // Add review to context
-    addComment({
-      gameId,
-      username: userName.trim(),
-      content: userComment.trim(),
-      isInappropriate: false,
-      userId: '', // Optionally, set userId if you have user auth
-      rating: userRating
-    });
   };
 
   const handleStarClick = (rating: number) => {
@@ -217,9 +255,9 @@ const ReviewModal: React.FC<ReviewModalProps> = ({
                 <label>Your Name:</label>
                 <input
                   type="text"
-                  value={userName}
-                  onChange={(e) => setUserName(e.target.value)}
-                  placeholder="Enter your name"
+                  value={authUser ? authUser.username : ''}
+                  readOnly
+                  placeholder={authUser ? authUser.username : 'Login required'}
                   className={styles['form-input']}
                 />
               </div>
@@ -261,6 +299,8 @@ const ReviewModal: React.FC<ReviewModalProps> = ({
                 <button 
                   className={styles['submit-review-button']}
                   onClick={handleSubmitReview}
+                  disabled={!authUser}
+                  title={!authUser ? 'Login to submit a review' : 'Submit review'}
                 >
                   Submit Review
                 </button>

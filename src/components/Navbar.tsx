@@ -5,7 +5,6 @@ import UserProfile from './UserProfile';
 
 interface NavbarProps {
   onSearch: (query: string) => void;
-  onClearSearch: () => void;
   onShowFavorites: () => void;
   onShowCart: () => void;
   onLogoClick: () => void;
@@ -67,6 +66,7 @@ export default function Navbar({
 
   const handleSearch = () => {
     onSearch(searchQuery);
+    setSearchQuery('');
   };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -415,7 +415,7 @@ export default function Navbar({
                   ×
                 </button>
               </div>
-              <div style={{ padding: '25px' }}>
+              <div style={{ padding: '25px', color: 'white' }}>
                 <input 
                   type="text" 
                   name="email" 
@@ -434,7 +434,7 @@ export default function Navbar({
                   onChange={handleLoginChange}
                   style={{ backgroundColor: 'rgba(255, 255, 255, 0.1)', border: '1px solid rgba(255, 255, 255, 0.2)', color: 'white' }}
                 />
-                {loginMessage && <p className="text-danger">{loginMessage}</p>}
+                {loginMessage && <p className="text-danger" style={{ color: 'white' }}>{loginMessage}</p>}
               </div>
               <div style={{
                 display: 'flex',
@@ -544,7 +544,7 @@ export default function Navbar({
                   ×
                 </button>
               </div>
-              <div style={{ padding: '25px' }}>
+              <div style={{ padding: '25px', color: 'white' }}>
                 <input 
                   type="text" 
                   name="username" 
@@ -572,7 +572,7 @@ export default function Navbar({
                   onChange={handleChange}
                   style={{ backgroundColor: 'rgba(255, 255, 255, 0.1)', border: '1px solid rgba(255, 255, 255, 0.2)', color: 'white' }}
                 />
-                {message && <p className="text-success">{message}</p>}
+                {message && <p className="text-success" style={{ color: 'white' }}>{message}</p>}
               </div>
               <div style={{
                 display: 'flex',

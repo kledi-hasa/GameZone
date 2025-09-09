@@ -250,6 +250,14 @@ const AdminPage: React.FC<{ onLogout: () => void }> = ({ onLogout }) => {
   const [modal, setModal] = useState<{type: string, data?: any} | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [userSearchQuery, setUserSearchQuery] = useState('');
+  const filteredUsers = useMemo(() => {
+    const q = userSearchQuery.trim().toLowerCase();
+    if (!q) return users;
+    return users.filter(user =>
+      user.username.toLowerCase().includes(q) ||
+      user.email.toLowerCase().includes(q)
+    );
+  }, [users, userSearchQuery]);
   
   // Form states
   const [userForm, setUserForm] = useState<Omit<User, 'id'>>({ 
@@ -289,6 +297,12 @@ const AdminPage: React.FC<{ onLogout: () => void }> = ({ onLogout }) => {
       }
     }
   }, [modal]);
+
+  useEffect(() => {
+    if (activeTab !== 'users' && userSearchQuery) {
+      setUserSearchQuery('');
+    }
+  }, [activeTab]);
 
   // CRUD Operations
   const handleAddUser = async (user: Omit<User, 'id'>) => {
@@ -596,13 +610,7 @@ const AdminPage: React.FC<{ onLogout: () => void }> = ({ onLogout }) => {
                       </tr>
                     </thead>
                     <tbody>
-                      {(userSearchQuery
-                        ? users.filter(user =>
-                            user.username.toLowerCase().includes(userSearchQuery.toLowerCase()) ||
-                            user.email.toLowerCase().includes(userSearchQuery.toLowerCase())
-                          )
-                        : users
-                      ).map(user => (
+                      {filteredUsers.map(user => (
                         <tr key={user.id}>
                           <td>{user.username}</td>
                           <td>{user.email}</td>
