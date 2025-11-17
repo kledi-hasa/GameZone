@@ -1,25 +1,20 @@
-# GameZone - Gaming Store
+GameZone - Gaming Store
 
 A modern gaming store application built with React, TypeScript, and Vite.
 
-## Features
+- Features
 
-- 🎮 Browse and search games
-- 👤 User registration and authentication
-- 🛒 Purchase games
-- 💬 Game reviews and comments
-- 👨‍💼 Admin dashboard with comprehensive analytics
-- 📊 Profit reports and user management
-- 🎥 Game trailers and media
+-  Browse and search games
+-  User registration and authentication
+-  Purchase games
+-  Game reviews and comments
+-  Admin dashboard with comprehensive analytics
+-  Profit reports and user management
+-  Game trailers and media
 
-## Getting Started
+- Getting Started
 
-### Prerequisites
-
-- Node.js (v16 or higher)
-- npm or yarn
-
-### Installation
+- Installation
 
 1. Clone the repository
 2. Install dependencies:
@@ -27,15 +22,15 @@ A modern gaming store application built with React, TypeScript, and Vite.
    npm install
    ```
 
-### Running the Application
+- Running the Application
 
-#### Option 1: Run both servers simultaneously (Recommended)
+- Option 1: Run both servers simultaneously (Recommended)
 ```bash
 npm run dev:all
 ```
 This will start both the React development server and the JSON database server.
 
-#### Option 2: Run servers separately
+- Option 2: Run servers separately
 In one terminal:
 ```bash
 npm run server
@@ -48,7 +43,7 @@ npm run dev
 ```
 This starts the React development server.
 
-### Database
+-- Database
 
 The application uses JSON Server as a mock database. The database file (`db.json`) contains:
 - Users (with roles: user, moderator, admin)
@@ -56,13 +51,13 @@ The application uses JSON Server as a mock database. The database file (`db.json
 - Comments and reviews
 - Purchase history
 
-### Admin Access
+-- Admin Access
 
 Default admin credentials:
 - Username: `admin`
 - Password: `admin123`
 
-## Project Structure
+--- Project Structure
 
 ```
 src/
@@ -72,7 +67,7 @@ src/
 └── assets/             # Static assets
 ```
 
-## Technologies Used
+--- Technologies Used
 
 - React 19
 - TypeScript
@@ -82,7 +77,7 @@ src/
 - React Router
 - CSS Modules
 
-## Development
+--- Development
 
 - The application automatically refreshes data when switching between admin dashboard tabs
 - User statistics are calculated in real-time based on purchase data
